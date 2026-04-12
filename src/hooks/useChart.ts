@@ -6,8 +6,9 @@ import {
   registerables,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import annotationPlugin from 'chartjs-plugin-annotation';
 
-Chart.register(...registerables);
+Chart.register(...registerables, annotationPlugin);
 
 export function useChart<TType extends ChartType>(
   config: ChartConfiguration<TType> | null,

@@ -262,6 +262,102 @@ header .version {
   display: block;
 }
 
+/* ── Section Header Controls ── */
+.section-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Aggregation Toggle */
+.agg-toggle {
+  display: flex;
+  gap: 2px;
+}
+
+.agg-btn {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+
+.agg-btn:hover { color: var(--text); border-color: var(--accent); }
+.agg-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Goal Input */
+.goal-trigger {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+
+.goal-trigger:hover { color: var(--text); border-color: var(--accent); }
+.goal-trigger.has-goal {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.goal-popover {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.goal-popover input {
+  width: 70px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 6px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.goal-popover input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.goal-popover .goal-unit {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.goal-popover .goal-clear {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+}
+
+.goal-popover .goal-clear:hover {
+  color: var(--z4);
+  border-color: var(--z4);
+}
+
 /* ── Chart Container ── */
 .chart-container {
   padding: 20px 0;

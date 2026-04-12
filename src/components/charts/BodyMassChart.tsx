@@ -1,8 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { BodyMassSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { insertGapBreaks } from '../../lib/chartUtils';
+import { aggregateTimeSeries, type AggregationMode } from '../../lib/aggregateTimeSeries';
+import { useGoal } from '../../lib/goals';
+import { goalAnnotation } from '../../lib/goalAnnotation';
+import { AggregationToggle } from '../AggregationToggle';
+import { GoalInput } from '../GoalInput';
 
 interface BodyMassChartProps {
   data: BodyMassSample[];
@@ -12,10 +17,15 @@ interface BodyMassChartProps {
 const MAX_POINTS = 90;
 
 export function BodyMassChart({ data, fig }: BodyMassChartProps) {
+  const [aggMode, setAggMode] = useState<AggregationMode>('day');
+  const [goal, setGoal] = useGoal('bodyMass');
+
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (data.length < 2) return null;
 
-    let series = data;
+    const raw = data.map((d) => ({ date: d.date, value: d.lbs }));
+    let series = aggregateTimeSeries(raw, aggMode);
+
     if (series.length > MAX_POINTS) {
       const step = Math.ceil(series.length / MAX_POINTS);
       series = series.filter((_, i) => i % step === 0);
@@ -29,7 +39,7 @@ export function BodyMassChart({ data, fig }: BodyMassChartProps) {
         datasets: [
           {
             label: 'Weight',
-            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.lbs }))),
+            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.value }))),
             borderColor: '#a78bfa',
             backgroundColor: 'rgba(167, 139, 250, 0.08)',
             fill: true,
@@ -47,6 +57,7 @@ export function BodyMassChart({ data, fig }: BodyMassChartProps) {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
+          annotation: goalAnnotation(goal),
           tooltip: {
             backgroundColor: '#1a1a1d',
             borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -57,7 +68,7 @@ export function BodyMassChart({ data, fig }: BodyMassChartProps) {
               label: (ctx) => {
                 const d = byTs.get(Number(ctx.parsed?.x));
                 if (!d) return '';
-                return `${d.lbs.toFixed(1)} lbs`;
+                return `${d.value.toFixed(1)} lbs`;
               },
             },
           },
@@ -89,7 +100,7 @@ export function BodyMassChart({ data, fig }: BodyMassChartProps) {
         },
       },
     };
-  }, [data]);
+  }, [data, aggMode, goal]);
 
   const ref = useChart(config);
   if (!config) return null;
@@ -98,7 +109,11 @@ export function BodyMassChart({ data, fig }: BodyMassChartProps) {
     <div className="section">
       <div className="section-header">
         <h2>Body Weight</h2>
-        <span className="meta">{data.length} measurements</span>
+        <div className="section-header-controls">
+          <AggregationToggle mode={aggMode} onChange={setAggMode} />
+          <GoalInput value={goal} onChange={setGoal} unit="lbs" />
+          <span className="meta">{data.length} measurements</span>
+        </div>
       </div>
       <div className="chart-container">
         <span className="fig-label">FIG. {String(fig).padStart(2, '0')}</span>

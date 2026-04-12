@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { WalkingHrSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { insertGapBreaks } from '../../lib/chartUtils';
+import { aggregateTimeSeries, type AggregationMode } from '../../lib/aggregateTimeSeries';
+import { AggregationToggle } from '../AggregationToggle';
 
 interface WalkingHrChartProps {
   data: WalkingHrSample[];
@@ -12,10 +14,14 @@ interface WalkingHrChartProps {
 const MAX_POINTS = 90;
 
 export function WalkingHrChart({ data, fig }: WalkingHrChartProps) {
+  const [aggMode, setAggMode] = useState<AggregationMode>('day');
+
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (data.length < 2) return null;
 
-    let series = data;
+    const raw = data.map((d) => ({ date: d.date, value: d.bpm }));
+    let series = aggregateTimeSeries(raw, aggMode);
+
     if (series.length > MAX_POINTS) {
       const step = Math.ceil(series.length / MAX_POINTS);
       series = series.filter((_, i) => i % step === 0);
@@ -27,7 +33,7 @@ export function WalkingHrChart({ data, fig }: WalkingHrChartProps) {
         datasets: [
           {
             label: 'Walking HR',
-            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.bpm }))),
+            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.value }))),
             borderColor: '#06b6d4',
             backgroundColor: 'rgba(6, 182, 212, 0.08)',
             fill: true,
@@ -80,7 +86,7 @@ export function WalkingHrChart({ data, fig }: WalkingHrChartProps) {
         },
       },
     };
-  }, [data]);
+  }, [data, aggMode]);
 
   const ref = useChart(config);
   if (!config) return null;
@@ -89,7 +95,10 @@ export function WalkingHrChart({ data, fig }: WalkingHrChartProps) {
     <div className="section">
       <div className="section-header">
         <h2>Walking Heart Rate</h2>
-        <span className="meta">{data.length} daily averages</span>
+        <div className="section-header-controls">
+          <AggregationToggle mode={aggMode} onChange={setAggMode} />
+          <span className="meta">{data.length} daily averages</span>
+        </div>
       </div>
       <div className="chart-container">
         <span className="fig-label">FIG. {String(fig).padStart(2, '0')}</span>
