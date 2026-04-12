@@ -88,6 +88,22 @@ describe('parseHealthXml HRV', () => {
     expect(data.hrv[0].value).toBeCloseTo(55);
     expect(data.hrv[0].date).toEqual(new Date('2026-02-01T10:00:00'));
   });
+
+  it('skips HRV with invalid numeric value', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN" startDate="2026-02-01T10:00:00" value="abc"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.hrv).toHaveLength(0);
+  });
+
+  it('skips HRV with invalid startDate', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN" startDate="not-a-date" value="42"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.hrv).toHaveLength(0);
+  });
 });
 
 describe('parseHealthXml walking HR', () => {
@@ -108,5 +124,21 @@ describe('parseHealthXml walking HR', () => {
     expect(data.walkingHR).toHaveLength(1);
     expect(data.walkingHR[0].bpm).toBeCloseTo(98);
     expect(data.walkingHR[0].date).toEqual(new Date('2026-03-10T12:00:00'));
+  });
+
+  it('skips walking HR with invalid numeric value', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage" startDate="2026-03-10T12:00:00" value="NaN"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.walkingHR).toHaveLength(0);
+  });
+
+  it('skips walking HR with invalid startDate', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage" startDate="bad-date" value="98"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.walkingHR).toHaveLength(0);
   });
 });

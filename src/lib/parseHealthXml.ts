@@ -158,10 +158,10 @@ export async function parseHealthXml(
     const dateM = record.match(/\bstartDate="([^"]*)"/);
     const valueM = record.match(/\bvalue="([^"]*)"/);
     if (!dateM || !valueM) continue;
-    data.hrv.push({
-      date: new Date(dateM[1]),
-      value: parseFloat(valueM[1]),
-    });
+    const date = new Date(dateM[1]);
+    const value = parseFloat(valueM[1]);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(value)) continue;
+    data.hrv.push({ date, value });
   }
   onProgress('hrv', 'done', data.hrv.length);
   await tick();
@@ -176,10 +176,10 @@ export async function parseHealthXml(
     const dateM = record.match(/\bstartDate="([^"]*)"/);
     const valueM = record.match(/\bvalue="([^"]*)"/);
     if (!dateM || !valueM) continue;
-    data.walkingHR.push({
-      date: new Date(dateM[1]),
-      bpm: parseFloat(valueM[1]),
-    });
+    const date = new Date(dateM[1]);
+    const bpm = parseFloat(valueM[1]);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(bpm)) continue;
+    data.walkingHR.push({ date, bpm });
   }
   onProgress('walkhr', 'done', data.walkingHR.length);
   await tick();
