@@ -47,10 +47,34 @@ export function friendlyType(workoutType: string): string {
   return 'Other';
 }
 
+function lowerBound(samples: HrSample[], target: Date): number {
+  let lo = 0;
+  let hi = samples.length;
+  const t = target.getTime();
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (samples[mid].date.getTime() < t) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+function upperBound(samples: HrSample[], target: Date): number {
+  let lo = 0;
+  let hi = samples.length;
+  const t = target.getTime();
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (samples[mid].date.getTime() <= t) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
 export function getHRForWorkout(workout: Workout, hrSamples: HrSample[]): HrSample[] {
-  return hrSamples.filter(
-    (s) => s.date >= workout.startDate && s.date <= workout.endDate,
-  );
+  const start = lowerBound(hrSamples, workout.startDate);
+  const end = upperBound(hrSamples, workout.endDate);
+  return hrSamples.slice(start, end);
 }
 
 export function getWorkoutSummary(

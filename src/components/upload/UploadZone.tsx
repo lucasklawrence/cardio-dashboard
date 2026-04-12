@@ -19,6 +19,14 @@ export function UploadZone({ onFile }: UploadZoneProps) {
     <div id="upload-section">
       <div
         className={`upload-zone${dragging ? ' dragging' : ''}`}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();

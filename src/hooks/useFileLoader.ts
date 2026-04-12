@@ -14,6 +14,7 @@ export function useFileLoader() {
   const [stages, setStages] = useState<ProgressStage[]>(initialStages);
   const [error, setError] = useState<string | null>(null);
   const stagesRef = useRef<ProgressStage[]>(stages);
+  const loadIdRef = useRef(0);
 
   const updateStage = useCallback(
     (id: string, status: ProgressStatus, count?: number | string) => {
@@ -28,6 +29,7 @@ export function useFileLoader() {
 
   const load = useCallback(
     async (file: File) => {
+      const loadId = ++loadIdRef.current;
       setError(null);
       setLoading(true);
       const fresh = initialStages();
@@ -35,12 +37,21 @@ export function useFileLoader() {
       setStages(fresh);
 
       try {
-        const data = await loadFile(file, updateStage);
-        setHealthData(data);
+        const data = await loadFile(file, (id, status, count) => {
+          if (loadId !== loadIdRef.current) return;
+          updateStage(id, status, count);
+        });
+        if (loadId === loadIdRef.current) {
+          setHealthData(data);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        if (loadId === loadIdRef.current) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
       } finally {
-        setLoading(false);
+        if (loadId === loadIdRef.current) {
+          setLoading(false);
+        }
       }
     },
     [setHealthData, updateStage],

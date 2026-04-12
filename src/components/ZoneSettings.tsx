@@ -9,6 +9,17 @@ const FIELDS: { key: keyof Zones; label: string }[] = [
   { key: 'z4Max', label: 'Zone 4 <' },
 ];
 
+function isValidZones(z: Zones): boolean {
+  return (
+    z.maxHR > 0 &&
+    z.z1Max > 0 &&
+    z.z1Max < z.z2Max &&
+    z.z2Max < z.z3Max &&
+    z.z3Max < z.z4Max &&
+    z.z4Max < z.maxHR
+  );
+}
+
 export function ZoneSettings() {
   const { zones, setZone } = useHealthDataContext();
 
@@ -21,10 +32,13 @@ export function ZoneSettings() {
             <label>{field.label}</label>
             <input
               type="number"
+              min={1}
               value={zones[field.key]}
               onChange={(e) => {
                 const next = parseInt(e.target.value, 10);
-                if (!isNaN(next)) setZone(field.key, next);
+                if (isNaN(next)) return;
+                const candidate = { ...zones, [field.key]: next };
+                if (isValidZones(candidate)) setZone(field.key, next);
               }}
             />
           </div>

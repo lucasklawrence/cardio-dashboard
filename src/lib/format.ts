@@ -1,7 +1,11 @@
 export function formatPace(minPerMi: number | null): string {
   if (minPerMi == null || !isFinite(minPerMi)) return '—';
-  const m = Math.floor(minPerMi);
-  const s = Math.round((minPerMi - m) * 60);
+  let m = Math.floor(minPerMi);
+  let s = Math.round((minPerMi - m) * 60);
+  if (s === 60) {
+    m += 1;
+    s = 0;
+  }
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
@@ -19,5 +23,8 @@ export function formatFullDate(d: Date): string {
 
 export function toDateInputValue(d: Date | null): string {
   if (!d) return '';
-  return d.toISOString().split('T')[0];
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }

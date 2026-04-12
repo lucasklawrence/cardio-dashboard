@@ -1,4 +1,4 @@
-import type { HealthData, ProgressCallback } from '../types';
+import type { HealthData, ProgressCallback, Workout } from '../types';
 
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
@@ -14,6 +14,7 @@ export async function parseHealthXml(
     vo2max: [],
   };
 
+  const workoutsByStart = new Map<string, Workout>();
   let match: RegExpExecArray | null;
 
   // Heart rate samples
@@ -66,7 +67,7 @@ export async function parseHealthXml(
     const endDate = get('endDate');
     if (!type || !startDate || !endDate) continue;
 
-    data.workouts.push({
+    const workout: Workout = {
       type,
       duration: parseFloat(get('duration') || '0') || 0,
       durationUnit: get('durationUnit') || 'min',
@@ -76,7 +77,9 @@ export async function parseHealthXml(
       distanceMi: null,
       distanceKm: null,
       elevationM: null,
-    });
+    };
+    data.workouts.push(workout);
+    workoutsByStart.set(startDate, workout);
   }
   onProgress('workouts', 'done', data.workouts.length);
   await tick();
@@ -89,12 +92,8 @@ export async function parseHealthXml(
   let blockMatch: RegExpExecArray | null;
   let distFound = 0;
   while ((blockMatch = workoutBlockRegex.exec(xml)) !== null) {
-    const blockStart = new Date(blockMatch[1]);
     const blockContent = blockMatch[2];
-
-    const workout = data.workouts.find(
-      (w) => Math.abs(w.startDate.getTime() - blockStart.getTime()) < 1000,
-    );
+    const workout = workoutsByStart.get(blockMatch[1]);
     if (!workout) continue;
 
     const distMatch = blockContent.match(

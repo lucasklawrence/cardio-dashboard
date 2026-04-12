@@ -22,9 +22,12 @@ export function StatsGrid({ summaries, restingHR, activeTab }: StatsGridProps) {
 
   const withDist = summaries.filter((s) => s.distMi && s.distMi > 0);
   const totalDistMi = withDist.reduce((a, s) => a + (s.distMi || 0), 0);
+  const withPace = withDist.filter(
+    (s) => s.paceMinPerMi != null && s.paceMinPerMi > 0,
+  );
   const avgPaceMin =
-    withDist.length > 0
-      ? withDist.reduce((a, s) => a + (s.paceMinPerMi || 0), 0) / withDist.length
+    withPace.length > 0
+      ? withPace.reduce((a, s) => a + s.paceMinPerMi!, 0) / withPace.length
       : null;
 
   const latestRHR = restingHR.length > 0 ? restingHR[restingHR.length - 1].bpm : null;
@@ -59,7 +62,7 @@ export function StatsGrid({ summaries, restingHR, activeTab }: StatsGridProps) {
       <div className="stat-card">
         <div className="label">Avg Pace</div>
         <div className="value">{formatPace(avgPaceMin)}</div>
-        <div className="unit">{avgPaceMin ? 'min/mile' : ''}</div>
+        <div className="unit">{avgPaceMin != null ? 'min/mile' : ''}</div>
       </div>
       <div className="stat-card">
         <div className="label">Resting HR</div>
