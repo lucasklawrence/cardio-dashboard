@@ -21,6 +21,7 @@ interface HealthDataContextValue {
   setDateFrom: (d: Date | null) => void;
   setDateTo: (d: Date | null) => void;
   setDatePreset: (months: number) => void;
+  setDateYTD: () => void;
 
   zones: Zones;
   setZone: (key: keyof Zones, value: number) => void;
@@ -52,6 +53,12 @@ export function HealthDataProvider({ children }: { children: ReactNode }) {
     setDateTo(null);
   }, []);
 
+  const setDateYTD = useCallback(() => {
+    const now = new Date();
+    setDateFrom(new Date(now.getFullYear(), 0, 1));
+    setDateTo(null);
+  }, []);
+
   const value = useMemo<HealthDataContextValue>(
     () => ({
       healthData,
@@ -63,10 +70,11 @@ export function HealthDataProvider({ children }: { children: ReactNode }) {
       setDateFrom,
       setDateTo,
       setDatePreset,
+      setDateYTD,
       zones,
       setZone,
     }),
-    [healthData, activeTab, dateFrom, dateTo, zones, setZone, setDatePreset],
+    [healthData, activeTab, dateFrom, dateTo, zones, setZone, setDatePreset, setDateYTD],
   );
 
   return (
