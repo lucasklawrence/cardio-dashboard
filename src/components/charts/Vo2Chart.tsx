@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { Vo2Sample } from '../../types';
 import { useChart } from '../../hooks/useChart';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface Vo2ChartProps {
   data: Vo2Sample[];
@@ -26,10 +27,11 @@ export function Vo2Chart({ data, fig }: Vo2ChartProps) {
         datasets: [
           {
             label: 'VO₂max',
-            data: series.map((d) => ({ x: d.date.getTime(), y: d.value })),
+            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.value }))),
             borderColor: '#f97316',
             backgroundColor: 'rgba(249, 115, 22, 0.08)',
             fill: true,
+            spanGaps: false,
             tension: 0.3,
             pointRadius: 2,
             pointHoverRadius: 5,

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { RestingHrSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface RhrChartProps {
   data: RestingHrSample[];
@@ -26,10 +27,11 @@ export function RhrChart({ data, fig }: RhrChartProps) {
         datasets: [
           {
             label: 'Resting HR',
-            data: series.map((d) => ({ x: d.date.getTime(), y: d.bpm })),
+            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.bpm }))),
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34, 197, 94, 0.08)',
             fill: true,
+            spanGaps: false,
             tension: 0.3,
             pointRadius: 1.5,
             pointHoverRadius: 4,

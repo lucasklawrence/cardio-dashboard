@@ -5,6 +5,7 @@ import { useChart } from '../../hooks/useChart';
 import { hrZone } from '../../lib/zones';
 import { ZONE_COLORS } from '../../constants';
 import { formatPace } from '../../lib/format';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface PaceChartProps {
   summaries: WorkoutSummary[];
@@ -24,10 +25,11 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         datasets: [
           {
             label: 'Pace (min/mi)',
-            data: withPace.map((s) => ({ x: s.startDate.getTime(), y: s.paceMinPerMi as number })),
+            data: insertGapBreaks(withPace.map((s) => ({ x: s.startDate.getTime(), y: s.paceMinPerMi as number }))),
             borderColor: '#eab308',
             backgroundColor: 'rgba(234, 179, 8, 0.08)',
             fill: true,
+            spanGaps: false,
             tension: 0.3,
             pointRadius: 3,
             pointHoverRadius: 5,

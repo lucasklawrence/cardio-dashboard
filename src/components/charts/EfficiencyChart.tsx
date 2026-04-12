@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { WorkoutSummary } from '../../types';
 import { useChart } from '../../hooks/useChart';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface EfficiencyChartProps {
   summaries: WorkoutSummary[];
@@ -20,13 +21,14 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
         datasets: [
           {
             label: 'Meters/Beat',
-            data: withEff.map((s) => ({
+            data: insertGapBreaks(withEff.map((s) => ({
               x: s.startDate.getTime(),
               y: parseFloat((s.cardiacEfficiency as number).toFixed(3)),
-            })),
+            }))),
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34, 197, 94, 0.08)',
             fill: true,
+            spanGaps: false,
             tension: 0.3,
             pointRadius: 3,
             pointHoverRadius: 5,
