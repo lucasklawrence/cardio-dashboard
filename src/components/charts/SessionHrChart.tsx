@@ -39,8 +39,8 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
             titleFont: { family: 'DM Mono' },
             bodyFont: { family: 'DM Mono' },
@@ -55,15 +55,15 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
         scales: {
           x: {
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               maxTicksLimit: 10,
             },
             grid: { display: false },
           },
           y: {
-            ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.3)', font: { family: 'DM Mono', size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             suggestedMin: 80,
           },
         },

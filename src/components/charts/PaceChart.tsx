@@ -26,8 +26,8 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
           {
             label: 'Pace (min/mi)',
             data: withPace.map((s) => s.paceMinPerMi as number),
-            borderColor: '#d4a843',
-            backgroundColor: 'rgba(212, 168, 67, 0.1)',
+            borderColor: '#eab308',
+            backgroundColor: 'rgba(234, 179, 8, 0.08)',
             fill: true,
             tension: 0.3,
             pointRadius: 3,
@@ -45,8 +45,8 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
             titleFont: { family: 'DM Mono' },
             bodyFont: { family: 'DM Mono' },
@@ -65,24 +65,24 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         scales: {
           x: {
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               maxTicksLimit: 8,
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
           },
           y: {
             reverse: true,
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               callback: (v) => formatPace(Number(v)),
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             title: {
               display: true,
               text: 'min/mile (lower = faster)',
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
             },
           },

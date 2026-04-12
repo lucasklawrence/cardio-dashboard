@@ -30,36 +30,42 @@ const SUB_ACTIVITIES: ActivityTab[] = ['stairs', 'run', 'walk'];
 interface ActivityChartsProps {
   summaries: WorkoutSummary[];
   zones: ReturnType<typeof useHealthDataContext>['zones'];
+  figStart: number;
 }
 
-function ActivityCharts({ summaries, zones }: ActivityChartsProps) {
+function ActivityCharts({ summaries, zones, figStart }: ActivityChartsProps) {
   const withPace = summaries.filter(
     (s) => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30,
   );
   const withEff = summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0);
+  let fig = figStart;
 
   return (
     <>
       {summaries.length > 1 && (
         <div className="chart-container" style={{ marginBottom: 12 }}>
+          <span className="fig-label">FIG. {String(fig++).padStart(2, '0')}</span>
           <p className="chart-caption">Avg HR per session</p>
           <SessionHrChart summaries={summaries} zones={zones} />
         </div>
       )}
       {withPace.length > 1 && (
         <div className="chart-container" style={{ marginBottom: 12 }}>
+          <span className="fig-label">FIG. {String(fig++).padStart(2, '0')}</span>
           <p className="chart-caption">Pace trend — min/mile</p>
           <PaceChart summaries={summaries} zones={zones} />
         </div>
       )}
       {withEff.length > 2 && (
         <div className="chart-container" style={{ marginBottom: 12 }}>
+          <span className="fig-label">FIG. {String(fig++).padStart(2, '0')}</span>
           <p className="chart-caption">Cardiac efficiency — meters per heartbeat</p>
           <EfficiencyChart summaries={summaries} />
         </div>
       )}
       {withPace.length > 2 && (
         <div className="chart-container">
+          <span className="fig-label">FIG. {String(fig).padStart(2, '0')}</span>
           <p className="chart-caption">Pace at heart rate — down+left = fitter</p>
           <PaceHrScatter summaries={summaries} />
         </div>
@@ -122,16 +128,22 @@ export function Dashboard() {
   const { summaries, rhr, vo2, overallZones } = view;
   const totalSessions = summaries.length;
 
+  let figCounter = 1;
+
   return (
     <>
-      <ZoneSettings />
-      <div className="tab-row">
-        <ActivityTabs />
+      <div className="dashboard-section">
+        <ZoneSettings />
       </div>
-      <DateFilter />
+      <div className="dashboard-section">
+        <div className="tab-row">
+          <ActivityTabs />
+        </div>
+        <DateFilter />
+      </div>
 
       {totalSessions === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state dashboard-section">
           <p>
             No {ACTIVITY_TABS[activeTab].label.toLowerCase()} sessions found in this
             date range.
@@ -142,28 +154,42 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          <StatsGrid
-            summaries={summaries}
-            restingHR={rhr}
-            activeTab={activeTab}
-          />
-          <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
+          <div className="dashboard-section">
+            <StatsGrid
+              summaries={summaries}
+              restingHR={rhr}
+              activeTab={activeTab}
+            />
+          </div>
+          <div className="dashboard-section">
+            <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
+          </div>
 
           {activeTab === 'all' ? (
             <>
-              {rhr.length > 1 && <RhrChart data={rhr} />}
-              {vo2.length > 1 && <Vo2Chart data={vo2} />}
+              {rhr.length > 1 && (
+                <div className="dashboard-section">
+                  <RhrChart data={rhr} fig={figCounter++} />
+                </div>
+              )}
+              {vo2.length > 1 && (
+                <div className="dashboard-section">
+                  <Vo2Chart data={vo2} fig={figCounter++} />
+                </div>
+              )}
 
               {SUB_ACTIVITIES.map((act) => {
                 const actSummaries = summaries.filter((s) => matchesTab(s.type, act));
                 if (actSummaries.length === 0) return null;
+                const startFig = figCounter;
+                figCounter += 4;
                 return (
-                  <div className="section" key={act}>
+                  <div className="section dashboard-section" key={act}>
                     <div className="section-header">
                       <h2>{ACTIVITY_TABS[act].label}</h2>
                       <span className="meta">{actSummaries.length} sessions</span>
                     </div>
-                    <ActivityCharts summaries={actSummaries} zones={zones} />
+                    <ActivityCharts summaries={actSummaries} zones={zones} figStart={startFig} />
                   </div>
                 );
               })}
@@ -171,43 +197,46 @@ export function Dashboard() {
           ) : (
             <>
               {summaries.length > 1 && (
-                <div className="section">
+                <div className="section dashboard-section">
                   <div className="section-header">
                     <h2>Avg HR Per Session</h2>
                     <span className="meta">Tracking cardiac efficiency over time</span>
                   </div>
                   <div className="chart-container">
+                    <span className="fig-label">FIG. {String(figCounter++).padStart(2, '0')}</span>
                     <SessionHrChart summaries={summaries} zones={zones} />
                   </div>
                 </div>
               )}
               {summaries.filter((s) => s.paceMinPerMi && s.paceMinPerMi < 30).length >
                 1 && (
-                <div className="section">
+                <div className="section dashboard-section">
                   <div className="section-header">
                     <h2>Pace Trend</h2>
                     <span className="meta">Min/mile — lower is faster</span>
                   </div>
                   <div className="chart-container">
+                    <span className="fig-label">FIG. {String(figCounter++).padStart(2, '0')}</span>
                     <PaceChart summaries={summaries} zones={zones} />
                   </div>
                 </div>
               )}
               {summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0)
                 .length > 2 && (
-                <div className="section">
+                <div className="section dashboard-section">
                   <div className="section-header">
                     <h2>Cardiac Efficiency</h2>
                     <span className="meta">Meters per heartbeat — higher = fitter</span>
                   </div>
                   <div className="chart-container">
+                    <span className="fig-label">FIG. {String(figCounter++).padStart(2, '0')}</span>
                     <EfficiencyChart summaries={summaries} />
                   </div>
                 </div>
               )}
               {summaries.filter((s) => s.paceMinPerMi && s.paceMinPerMi < 30).length >
                 2 && (
-                <div className="section">
+                <div className="section dashboard-section">
                   <div className="section-header">
                     <h2>Pace at Heart Rate</h2>
                     <span className="meta">
@@ -215,6 +244,7 @@ export function Dashboard() {
                     </span>
                   </div>
                   <div className="chart-container">
+                    <span className="fig-label">FIG. {String(figCounter++).padStart(2, '0')}</span>
                     <PaceHrScatter summaries={summaries} />
                   </div>
                 </div>
@@ -222,14 +252,18 @@ export function Dashboard() {
             </>
           )}
 
-          <SessionLog summaries={summaries} activeTab={activeTab} />
-          <DataSummary
-            healthData={healthData}
-            totalSessions={totalSessions}
-            stairCount={tabCounts.stairs}
-            runCount={tabCounts.run}
-            walkCount={tabCounts.walk}
-          />
+          <div className="dashboard-section">
+            <SessionLog summaries={summaries} activeTab={activeTab} />
+          </div>
+          <div className="dashboard-section">
+            <DataSummary
+              healthData={healthData}
+              totalSessions={totalSessions}
+              stairCount={tabCounts.stairs}
+              runCount={tabCounts.run}
+              walkCount={tabCounts.walk}
+            />
+          </div>
         </>
       )}
     </>
