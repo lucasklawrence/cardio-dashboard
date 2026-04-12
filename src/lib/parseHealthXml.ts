@@ -14,7 +14,7 @@ export async function parseHealthXml(
     vo2max: [],
   };
 
-  const workoutsByStart = new Map<string, Workout>();
+  const workoutsByStart = new Map<string, Workout[]>();
   let match: RegExpExecArray | null;
 
   // Heart rate samples
@@ -73,13 +73,15 @@ export async function parseHealthXml(
       durationUnit: get('durationUnit') || 'min',
       startDate: new Date(startDate),
       endDate: new Date(endDate),
-      calories: parseFloat(get('totalEnergyBurned') || '') || null,
+      calories: get('totalEnergyBurned') != null ? parseFloat(get('totalEnergyBurned')!) : null,
       distanceMi: null,
       distanceKm: null,
       elevationM: null,
     };
     data.workouts.push(workout);
-    workoutsByStart.set(startDate, workout);
+    const arr = workoutsByStart.get(startDate);
+    if (arr) arr.push(workout);
+    else workoutsByStart.set(startDate, [workout]);
   }
   onProgress('workouts', 'done', data.workouts.length);
   await tick();
@@ -93,8 +95,9 @@ export async function parseHealthXml(
   let distFound = 0;
   while ((blockMatch = workoutBlockRegex.exec(xml)) !== null) {
     const blockContent = blockMatch[2];
-    const workout = workoutsByStart.get(blockMatch[1]);
-    if (!workout) continue;
+    const matches = workoutsByStart.get(blockMatch[1]);
+    if (!matches || matches.length === 0) continue;
+    const workout = matches.shift()!;
 
     const distMatch = blockContent.match(
       /type="HKQuantityTypeIdentifierDistanceWalkingRunning"[^>]*sum="([^"]*)"/,
@@ -169,6 +172,7 @@ export async function parseHealthXml(
   data.restingHR.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.workouts.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   data.vo2max.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.stepCounts.sort((a, b) => a.date.getTime() - b.date.getTime());
   onProgress('sort', 'done');
   await tick();
 
