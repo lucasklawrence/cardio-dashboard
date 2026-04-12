@@ -28,6 +28,15 @@ export function DataSummary({
           Resting HR readings:{' '}
           <strong>{healthData.restingHR.length.toLocaleString()}</strong>
           <br />
+          HRV readings:{' '}
+          <strong>{healthData.hrv.length.toLocaleString()}</strong>
+          <br />
+          Walking HR averages:{' '}
+          <strong>{healthData.walkingHR.length.toLocaleString()}</strong>
+          <br />
+          Body mass entries:{' '}
+          <strong>{healthData.bodyMass.length.toLocaleString()}</strong>
+          <br />
           Workouts in range: <strong>{totalSessions}</strong>
           <br />
           Stair climber: <strong>{stairCount}</strong> · Running:{' '}

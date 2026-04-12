@@ -40,6 +40,9 @@ export const PARSE_STAGES = [
   { id: 'workouts', label: 'Workouts' },
   { id: 'distance', label: 'Distance & elevation' },
   { id: 'vo2', label: 'VO₂max estimates' },
+  { id: 'hrv', label: 'Heart rate variability' },
+  { id: 'walkhr', label: 'Walking heart rate' },
+  { id: 'mass', label: 'Body mass' },
   { id: 'steps', label: 'Step counts' },
   { id: 'sort', label: 'Sorting & finalizing' },
 ] as const;

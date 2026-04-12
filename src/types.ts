@@ -15,6 +15,21 @@ export interface Vo2Sample {
   value: number;
 }
 
+export interface HrvSample {
+  date: Date;
+  value: number;
+}
+
+export interface WalkingHrSample {
+  date: Date;
+  bpm: number;
+}
+
+export interface BodyMassSample {
+  date: Date;
+  lbs: number;
+}
+
 export interface StepSample {
   date: Date;
   count: number;
@@ -39,6 +54,9 @@ export interface HealthData {
   workouts: Workout[];
   stepCounts: StepSample[];
   vo2max: Vo2Sample[];
+  hrv: HrvSample[];
+  walkingHR: WalkingHrSample[];
+  bodyMass: BodyMassSample[];
 }
 
 export interface Zones {

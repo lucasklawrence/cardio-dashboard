@@ -12,6 +12,9 @@ export async function parseHealthXml(
     workouts: [],
     stepCounts: [],
     vo2max: [],
+    hrv: [],
+    walkingHR: [],
+    bodyMass: [],
   };
 
   const workoutsByStart = new Map<string, Workout[]>();
@@ -145,6 +148,69 @@ export async function parseHealthXml(
   onProgress('vo2', 'done', data.vo2max.length);
   await tick();
 
+  // HRV (SDNN)
+  onProgress('hrv', 'active');
+  await tick();
+  const hrvRegex =
+    /<Record\b[^>]*type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*>/g;
+  while ((match = hrvRegex.exec(xml)) !== null) {
+    const record = match[0];
+    const dateM = record.match(/\bstartDate="([^"]*)"/);
+    const valueM = record.match(/\bvalue="([^"]*)"/);
+    if (!dateM || !valueM) continue;
+    const date = new Date(dateM[1]);
+    const value = parseFloat(valueM[1]);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(value)) continue;
+    data.hrv.push({ date, value });
+  }
+  onProgress('hrv', 'done', data.hrv.length);
+  await tick();
+
+  // Walking heart rate average
+  onProgress('walkhr', 'active');
+  await tick();
+  const walkHrRegex =
+    /<Record\b[^>]*type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*>/g;
+  while ((match = walkHrRegex.exec(xml)) !== null) {
+    const record = match[0];
+    const dateM = record.match(/\bstartDate="([^"]*)"/);
+    const valueM = record.match(/\bvalue="([^"]*)"/);
+    if (!dateM || !valueM) continue;
+    const date = new Date(dateM[1]);
+    const bpm = parseFloat(valueM[1]);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(bpm)) continue;
+    data.walkingHR.push({ date, bpm });
+  }
+  onProgress('walkhr', 'done', data.walkingHR.length);
+  await tick();
+
+  // Body mass
+  onProgress('mass', 'active');
+  await tick();
+  const massRegex =
+    /<Record type="HKQuantityTypeIdentifierBodyMass"\s([^>]+)/g;
+  while ((match = massRegex.exec(xml)) !== null) {
+    const attrs = match[1];
+    const dateM = attrs.match(/startDate="([^"]*)"/);
+    const valM = attrs.match(/value="([^"]*)"/);
+    const unitM = attrs.match(/unit="([^"]*)"/);
+    if (!dateM || !valM) continue;
+    const val = parseFloat(valM[1]);
+    const date = new Date(dateM[1]);
+    if (!Number.isFinite(val) || Number.isNaN(date.getTime())) continue;
+
+    const unit = unitM ? unitM[1] : 'lb';
+    const lbs =
+      unit === 'lb' ? val :
+      unit === 'kg' ? val * 2.20462 :
+      NaN;
+    if (!Number.isFinite(lbs)) continue;
+
+    data.bodyMass.push({ date, lbs });
+  }
+  onProgress('mass', 'done', data.bodyMass.length);
+  await tick();
+
   // Step counts
   onProgress('steps', 'active');
   await tick();
@@ -172,6 +238,9 @@ export async function parseHealthXml(
   data.restingHR.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.workouts.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   data.vo2max.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.hrv.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.walkingHR.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.bodyMass.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.stepCounts.sort((a, b) => a.date.getTime() - b.date.getTime());
   onProgress('sort', 'done');
   await tick();

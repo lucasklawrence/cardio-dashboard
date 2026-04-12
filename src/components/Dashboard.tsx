@@ -20,6 +20,9 @@ import { DataSummary } from './DataSummary';
 
 import { RhrChart } from './charts/RhrChart';
 import { Vo2Chart } from './charts/Vo2Chart';
+import { HrvChart } from './charts/HrvChart';
+import { WalkingHrChart } from './charts/WalkingHrChart';
+import { BodyMassChart } from './charts/BodyMassChart';
 import { SessionHrChart } from './charts/SessionHrChart';
 import { PaceChart } from './charts/PaceChart';
 import { EfficiencyChart } from './charts/EfficiencyChart';
@@ -105,11 +108,14 @@ export function Dashboard() {
 
     const rhr = applyDateFilter(healthData.restingHR, (r) => r.date, dateFrom, dateTo);
     const vo2 = applyDateFilter(healthData.vo2max, (v) => v.date, dateFrom, dateTo);
+    const hrv = applyDateFilter(healthData.hrv, (h) => h.date, dateFrom, dateTo);
+    const walkingHR = applyDateFilter(healthData.walkingHR, (w) => w.date, dateFrom, dateTo);
+    const bodyMass = applyDateFilter(healthData.bodyMass, (b) => b.date, dateFrom, dateTo);
 
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
 
-    return { summaries, rhr, vo2, overallZones };
+    return { summaries, rhr, vo2, hrv, walkingHR, bodyMass, overallZones };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
   const tabCounts = useMemo(() => {
@@ -138,7 +144,7 @@ export function Dashboard() {
 
   if (!healthData || !view) return null;
 
-  const { summaries, rhr, vo2, overallZones } = view;
+  const { summaries, rhr, vo2, hrv, walkingHR, bodyMass, overallZones } = view;
   const totalSessions = summaries.length;
 
   let figCounter = 1;
@@ -188,6 +194,21 @@ export function Dashboard() {
               {vo2.length > 1 && (
                 <div className="dashboard-section">
                   <Vo2Chart data={vo2} fig={figCounter++} />
+                </div>
+              )}
+              {hrv.length > 1 && (
+                <div className="dashboard-section">
+                  <HrvChart data={hrv} fig={figCounter++} />
+                </div>
+              )}
+              {walkingHR.length > 1 && (
+                <div className="dashboard-section">
+                  <WalkingHrChart data={walkingHR} fig={figCounter++} />
+                </div>
+              )}
+              {bodyMass.length > 1 && (
+                <div className="dashboard-section">
+                  <BodyMassChart data={bodyMass} fig={figCounter++} />
                 </div>
               )}
 
