@@ -35,6 +35,16 @@ export interface StepSample {
   count: number;
 }
 
+export interface SleepSample {
+  date: Date;
+  hours: number;
+}
+
+export interface ActiveEnergySample {
+  date: Date;
+  kcal: number;
+}
+
 export interface Workout {
   type: string;
   duration: number;
@@ -57,6 +67,8 @@ export interface HealthData {
   hrv: HrvSample[];
   walkingHR: WalkingHrSample[];
   bodyMass: BodyMassSample[];
+  sleep: SleepSample[];
+  activeEnergy: ActiveEnergySample[];
 }
 
 export interface Zones {

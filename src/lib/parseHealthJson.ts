@@ -28,6 +28,21 @@ interface CompactWorkout {
   elevF?: number | null;
 }
 
+interface CompactStep {
+  d: string;
+  c: number;
+}
+
+interface CompactSleep {
+  d: string;
+  h: number;
+}
+
+interface CompactEnergy {
+  d: string;
+  k: number;
+}
+
 interface CompactHealthData {
   heartRateSamples?: CompactSample[];
   restingHR?: CompactSample[];
@@ -36,10 +51,18 @@ interface CompactHealthData {
   hrv?: CompactVo2[];
   walkingHR?: CompactSample[];
   bodyMass?: CompactMass[];
+  stepCounts?: CompactStep[];
+  sleep?: CompactSleep[];
+  activeEnergy?: CompactEnergy[];
 }
 
 function byDate(a: { date: Date }, b: { date: Date }) {
   return a.date.getTime() - b.date.getTime();
+}
+
+/** Append T00:00:00 to YYYY-MM-DD strings so they parse as local midnight, not UTC. */
+function localDate(d: string): Date {
+  return d.includes('T') ? new Date(d) : new Date(d + 'T00:00:00');
 }
 
 export function hydrateHealthJson(raw: CompactHealthData): HealthData {
@@ -79,6 +102,18 @@ export function hydrateHealthJson(raw: CompactHealthData): HealthData {
     date: new Date(s.d),
     lbs: s.lb,
   }));
+  const stepCounts = (raw.stepCounts || []).map((s) => ({
+    date: localDate(s.d),
+    count: s.c,
+  }));
+  const sleep = (raw.sleep || []).map((s) => ({
+    date: localDate(s.d),
+    hours: s.h,
+  }));
+  const activeEnergy = (raw.activeEnergy || []).map((s) => ({
+    date: localDate(s.d),
+    kcal: s.k,
+  }));
 
   heartRateSamples.sort(byDate);
   restingHR.sort(byDate);
@@ -87,15 +122,20 @@ export function hydrateHealthJson(raw: CompactHealthData): HealthData {
   hrv.sort(byDate);
   walkingHR.sort(byDate);
   bodyMass.sort(byDate);
+  stepCounts.sort(byDate);
+  sleep.sort(byDate);
+  activeEnergy.sort(byDate);
 
   return {
     heartRateSamples,
     restingHR,
     workouts,
-    stepCounts: [],
+    stepCounts,
     vo2max,
     hrv,
     walkingHR,
     bodyMass,
+    sleep,
+    activeEnergy,
   };
 }

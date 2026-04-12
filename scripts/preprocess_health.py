@@ -17,7 +17,7 @@ import os
 import json
 import zipfile
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def log(msg, end='\n'):
     print(f"  {msg}", end=end, flush=True)
@@ -31,6 +31,9 @@ def parse_health_xml(xml_text):
         'hrv': [],
         'walkingHR': [],
         'bodyMass': [],
+        'stepCounts': [],
+        'sleep': [],
+        'activeEnergy': [],
     }
 
     total_len = len(xml_text)
@@ -237,6 +240,87 @@ def parse_health_xml(xml_text):
         count += 1
     log(f" {count:,} found")
 
+    # ─── Step counts (aggregate to daily totals) ───
+    log("Parsing step counts...", end='')
+    step_regex = re.compile(
+        r'<Record type="HKQuantityTypeIdentifierStepCount"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"'
+    )
+    steps_by_day = {}
+    count = 0
+    for m in step_regex.finditer(xml_text):
+        try:
+            dt = datetime.fromisoformat(m.group(1).replace(' +', '+').replace(' -', '-'))
+            val = int(float(m.group(2)))
+        except (ValueError, TypeError):
+            continue
+        day_key = dt.strftime('%Y-%m-%d')
+        steps_by_day[day_key] = steps_by_day.get(day_key, 0) + val
+        count += 1
+    for day_key, total in sorted(steps_by_day.items()):
+        data['stepCounts'].append({'d': day_key, 'c': total})
+    log(f" {len(steps_by_day):,} days ({count:,} records)")
+
+    # ─── Sleep analysis ───
+    log("Parsing sleep analysis...", end='')
+    sleep_regex = re.compile(
+        r'<Record\b[^>]*type="HKCategoryTypeIdentifierSleepAnalysis"[^>]*>'
+    )
+    SLEEP_STAGES = {'AsleepCore', 'AsleepDeep', 'AsleepREM', 'Asleep'}
+    sleep_by_night = {}
+    count = 0
+    for m in sleep_regex.finditer(xml_text):
+        record = m.group(0)
+        val_m = re.search(r'\bvalue="(?:HKCategoryValueSleepAnalysis)?(\w+)"', record)
+        if not val_m or val_m.group(1) not in SLEEP_STAGES:
+            continue
+        start_m = re.search(r'\bstartDate="([^"]*)"', record)
+        end_m = re.search(r'\bendDate="([^"]*)"', record)
+        if not start_m or not end_m:
+            continue
+        try:
+            start = datetime.fromisoformat(start_m.group(1).replace(' +', '+').replace(' -', '-'))
+            end = datetime.fromisoformat(end_m.group(1).replace(' +', '+').replace(' -', '-'))
+        except (ValueError, TypeError):
+            continue
+        hours = (end - start).total_seconds() / 3600
+        if hours <= 0 or hours > 24:
+            continue
+        # Assign to "night": if sleep starts before noon, count as previous day
+        night = start
+        if night.hour < 12:
+            night = night - timedelta(days=1)
+        night_key = night.strftime('%Y-%m-%d')
+        sleep_by_night[night_key] = sleep_by_night.get(night_key, 0) + hours
+        count += 1
+    for night_key, hours in sorted(sleep_by_night.items()):
+        data['sleep'].append({'d': night_key, 'h': round(hours, 2)})
+    log(f" {len(sleep_by_night):,} nights ({count:,} records)")
+
+    # ─── Active energy burned (aggregate to daily totals) ───
+    log("Parsing active energy...", end='')
+    energy_regex = re.compile(
+        r'<Record\b[^>]*type="HKQuantityTypeIdentifierActiveEnergyBurned"[^>]*>'
+    )
+    energy_by_day = {}
+    count = 0
+    for m in energy_regex.finditer(xml_text):
+        record = m.group(0)
+        date_m = re.search(r'\bstartDate="([^"]*)"', record)
+        val_m = re.search(r'\bvalue="([^"]*)"', record)
+        if not date_m or not val_m:
+            continue
+        try:
+            dt = datetime.fromisoformat(date_m.group(1).replace(' +', '+').replace(' -', '-'))
+            kcal = float(val_m.group(1))
+        except (ValueError, TypeError):
+            continue
+        day_key = dt.strftime('%Y-%m-%d')
+        energy_by_day[day_key] = energy_by_day.get(day_key, 0) + kcal
+        count += 1
+    for day_key, total in sorted(energy_by_day.items()):
+        data['activeEnergy'].append({'d': day_key, 'k': int(total + 0.5)})
+    log(f" {len(energy_by_day):,} days ({count:,} records)")
+
     return data
 
 
@@ -314,6 +398,9 @@ def main():
     print(f"    HRV (SDNN):         {len(data['hrv']):,}")
     print(f"    Walking HR avg:     {len(data['walkingHR']):,}")
     print(f"    Body mass:          {len(data['bodyMass']):,}")
+    print(f"    Step counts:        {len(data['stepCounts']):,} days")
+    print(f"    Sleep nights:       {len(data['sleep']):,}")
+    print(f"    Active energy:      {len(data['activeEnergy']):,} days")
     print(f"")
     print(f"  Now open the dashboard and drop in {os.path.basename(output_path)}")
     print(f"{'='*50}\n")

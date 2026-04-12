@@ -44,5 +44,7 @@ export const PARSE_STAGES = [
   { id: 'walkhr', label: 'Walking heart rate' },
   { id: 'mass', label: 'Body mass' },
   { id: 'steps', label: 'Step counts' },
+  { id: 'sleep', label: 'Sleep analysis' },
+  { id: 'energy', label: 'Active energy' },
   { id: 'sort', label: 'Sorting & finalizing' },
 ] as const;

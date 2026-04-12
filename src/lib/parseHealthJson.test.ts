@@ -91,6 +91,36 @@ describe('hydrateHealthJson', () => {
     ]);
   });
 
+  it('hydrates step count samples', () => {
+    const raw = {
+      stepCounts: [{ d: '2026-01-15', c: 10000 }],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.stepCounts).toHaveLength(1);
+    expect(data.stepCounts[0].count).toBe(10000);
+    expect(data.stepCounts[0].date).toBeInstanceOf(Date);
+  });
+
+  it('hydrates sleep samples', () => {
+    const raw = {
+      sleep: [{ d: '2026-01-15', h: 7.5 }],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.sleep).toHaveLength(1);
+    expect(data.sleep[0].hours).toBe(7.5);
+    expect(data.sleep[0].date).toBeInstanceOf(Date);
+  });
+
+  it('hydrates active energy samples', () => {
+    const raw = {
+      activeEnergy: [{ d: '2026-01-15', k: 450 }],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.activeEnergy).toHaveLength(1);
+    expect(data.activeEnergy[0].kcal).toBe(450);
+    expect(data.activeEnergy[0].date).toBeInstanceOf(Date);
+  });
+
   it('handles empty/missing arrays', () => {
     const data = hydrateHealthJson({});
     expect(data.heartRateSamples).toHaveLength(0);
@@ -101,6 +131,8 @@ describe('hydrateHealthJson', () => {
     expect(data.hrv).toHaveLength(0);
     expect(data.walkingHR).toHaveLength(0);
     expect(data.bodyMass).toHaveLength(0);
+    expect(data.sleep).toHaveLength(0);
+    expect(data.activeEnergy).toHaveLength(0);
   });
 
   it('sorts heart rate samples by date', () => {

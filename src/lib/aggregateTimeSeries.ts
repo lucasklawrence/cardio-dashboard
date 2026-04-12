@@ -17,9 +17,12 @@ function getMonthKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+export type AggregationReducer = 'avg' | 'sum';
+
 export function aggregateTimeSeries(
   data: TimePoint[],
   mode: AggregationMode,
+  reducer: AggregationReducer = 'avg',
 ): TimePoint[] {
   if (mode === 'day' || data.length === 0) return data;
 
@@ -45,8 +48,9 @@ export function aggregateTimeSeries(
 
   const result: TimePoint[] = [];
   for (const [key, values] of groups) {
-    const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-    result.push({ date: groupDates.get(key)!, value: avg });
+    const total = values.reduce((sum, v) => sum + v, 0);
+    const value = reducer === 'sum' ? total : total / values.length;
+    result.push({ date: groupDates.get(key)!, value });
   }
 
   result.sort((a, b) => a.date.getTime() - b.date.getTime());
