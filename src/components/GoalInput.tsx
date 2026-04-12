@@ -46,6 +46,7 @@ export function GoalInput({ value, onChange, unit }: GoalInputProps) {
           onBlur={handleSubmit}
           onKeyDown={handleKeyDown}
           placeholder="target"
+          aria-label={`Goal target (${unit})`}
         />
         <span className="goal-unit">{unit}</span>
         {value != null && (
