@@ -87,4 +87,64 @@ describe('hydrateHealthJson', () => {
     expect(data.walkingHR).toHaveLength(0);
     expect(data.bodyMass).toHaveLength(0);
   });
+
+  it('sorts heart rate samples by date', () => {
+    const raw = {
+      heartRateSamples: [
+        { d: '2026-03-01T10:00:00', b: 80 },
+        { d: '2026-01-01T10:00:00', b: 70 },
+        { d: '2026-02-01T10:00:00', b: 75 },
+      ],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.heartRateSamples.map((s) => s.bpm)).toEqual([70, 75, 80]);
+  });
+
+  it('sorts workouts by startDate', () => {
+    const base = {
+      t: 'HKWorkoutActivityTypeRunning',
+      dur: 30,
+      du: 'min',
+      cal: 250,
+      dmi: 3.1,
+      dkm: 5.0,
+      elev: null,
+    };
+    const raw = {
+      workouts: [
+        { ...base, sd: '2026-03-01T10:00:00', ed: '2026-03-01T10:30:00' },
+        { ...base, sd: '2026-01-01T10:00:00', ed: '2026-01-01T10:30:00' },
+      ],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.workouts[0].startDate.getTime()).toBeLessThan(
+      data.workouts[1].startDate.getTime(),
+    );
+  });
+
+  it('sorts vo2max, hrv, walkingHR, and bodyMass by date', () => {
+    const raw = {
+      vo2max: [
+        { d: '2026-02-01T10:00:00', v: 40 },
+        { d: '2026-01-01T10:00:00', v: 42 },
+      ],
+      hrv: [
+        { d: '2026-03-01T10:00:00', v: 50 },
+        { d: '2026-01-01T10:00:00', v: 45 },
+      ],
+      walkingHR: [
+        { d: '2026-02-01T10:00:00', b: 100 },
+        { d: '2026-01-01T10:00:00', b: 95 },
+      ],
+      bodyMass: [
+        { d: '2026-03-01T10:00:00', lb: 180 },
+        { d: '2026-01-01T10:00:00', lb: 175 },
+      ],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.vo2max.map((s) => s.value)).toEqual([42, 40]);
+    expect(data.hrv.map((s) => s.value)).toEqual([45, 50]);
+    expect(data.walkingHR.map((s) => s.bpm)).toEqual([95, 100]);
+    expect(data.bodyMass.map((s) => s.lbs)).toEqual([175, 180]);
+  });
 });

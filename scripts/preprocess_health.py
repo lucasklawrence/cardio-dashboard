@@ -202,15 +202,21 @@ def parse_health_xml(xml_text):
     # ─── Body mass ───
     log("Parsing body mass...", end='')
     mass_regex = re.compile(
-        r'<Record type="HKQuantityTypeIdentifierBodyMass"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"[^>]*unit="([^"]*)"'
+        r'<Record type="HKQuantityTypeIdentifierBodyMass"\s([^>]+)'
     )
     count = 0
     for m in mass_regex.finditer(xml_text):
-        val = float(m.group(2))
-        unit = m.group(3)
+        attrs = m.group(1)
+        date_m = re.search(r'startDate="([^"]*)"', attrs)
+        val_m = re.search(r'value="([^"]*)"', attrs)
+        unit_m = re.search(r'unit="([^"]*)"', attrs)
+        if not date_m or not val_m:
+            continue
+        val = float(val_m.group(1))
+        unit = unit_m.group(1) if unit_m else 'lb'
         lbs = val if unit == 'lb' else val * 2.20462
         data['bodyMass'].append({
-            'd': m.group(1),
+            'd': date_m.group(1),
             'lb': round(lbs, 1)
         })
         count += 1

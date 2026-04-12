@@ -180,12 +180,17 @@ export async function parseHealthXml(
   onProgress('mass', 'active');
   await tick();
   const massRegex =
-    /<Record type="HKQuantityTypeIdentifierBodyMass"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"[^>]*unit="([^"]*)"/g;
+    /<Record type="HKQuantityTypeIdentifierBodyMass"\s([^>]+)/g;
   while ((match = massRegex.exec(xml)) !== null) {
-    const val = parseFloat(match[2]);
-    const unit = match[3];
+    const attrs = match[1];
+    const dateM = attrs.match(/startDate="([^"]*)"/);
+    const valM = attrs.match(/value="([^"]*)"/);
+    const unitM = attrs.match(/unit="([^"]*)"/);
+    if (!dateM || !valM) continue;
+    const val = parseFloat(valM[1]);
+    const unit = unitM ? unitM[1] : 'lb';
     data.bodyMass.push({
-      date: new Date(match[1]),
+      date: new Date(dateM[1]),
       lbs: unit === 'lb' ? val : val * 2.20462,
     });
   }
