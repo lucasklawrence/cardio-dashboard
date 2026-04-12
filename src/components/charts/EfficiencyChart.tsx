@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { WorkoutSummary } from '../../types';
 import { useChart } from '../../hooks/useChart';
-import { formatShortDate } from '../../lib/format';
 
 interface EfficiencyChartProps {
   summaries: WorkoutSummary[];
@@ -18,18 +17,20 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
     return {
       type: 'line',
       data: {
-        labels: withEff.map((s) => formatShortDate(s.startDate)),
         datasets: [
           {
             label: 'Meters/Beat',
-            data: withEff.map((s) => parseFloat((s.cardiacEfficiency as number).toFixed(3))),
+            data: withEff.map((s) => ({
+              x: s.startDate.getTime(),
+              y: parseFloat((s.cardiacEfficiency as number).toFixed(3)),
+            })),
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34, 197, 94, 0.08)',
             fill: true,
             tension: 0.3,
             pointRadius: 3,
             pointHoverRadius: 5,
-            borderWidth: 2,
+            borderWidth: 1.5,
           },
         ],
       },
@@ -42,8 +43,8 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
             backgroundColor: '#1a1a1d',
             borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
-            titleFont: { family: 'DM Mono' },
-            bodyFont: { family: 'DM Mono' },
+            titleFont: { family: 'DM Mono', size: 10 },
+            bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
               label: (ctx) => {
                 const s = withEff[ctx.dataIndex];
@@ -54,6 +55,8 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'week', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
               color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
@@ -62,7 +65,10 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
             grid: { color: 'rgba(255, 255, 255, 0.04)' },
           },
           y: {
-            ticks: { color: 'rgba(255, 255, 255, 0.3)', font: { family: 'DM Mono', size: 10 } },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.3)',
+              font: { family: 'DM Mono', size: 10 },
+            },
             grid: { color: 'rgba(255, 255, 255, 0.04)' },
             title: {
               display: true,

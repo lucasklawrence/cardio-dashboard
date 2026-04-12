@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { RestingHrSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
-import { formatShortDate } from '../../lib/format';
 
 interface RhrChartProps {
   data: RestingHrSample[];
@@ -24,11 +23,10 @@ export function RhrChart({ data, fig }: RhrChartProps) {
     return {
       type: 'line',
       data: {
-        labels: series.map((d) => formatShortDate(d.date)),
         datasets: [
           {
             label: 'Resting HR',
-            data: series.map((d) => d.bpm),
+            data: series.map((d) => ({ x: d.date.getTime(), y: d.bpm })),
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34, 197, 94, 0.08)',
             fill: true,
@@ -54,6 +52,8 @@ export function RhrChart({ data, fig }: RhrChartProps) {
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'month', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
               color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },

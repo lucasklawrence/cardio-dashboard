@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { Vo2Sample } from '../../types';
 import { useChart } from '../../hooks/useChart';
-import { formatShortDate } from '../../lib/format';
 
 interface Vo2ChartProps {
   data: Vo2Sample[];
@@ -24,11 +23,10 @@ export function Vo2Chart({ data, fig }: Vo2ChartProps) {
     return {
       type: 'line',
       data: {
-        labels: series.map((d) => formatShortDate(d.date)),
         datasets: [
           {
             label: 'VO₂max',
-            data: series.map((d) => d.value),
+            data: series.map((d) => ({ x: d.date.getTime(), y: d.value })),
             borderColor: '#f97316',
             backgroundColor: 'rgba(249, 115, 22, 0.08)',
             fill: true,
@@ -51,12 +49,14 @@ export function Vo2Chart({ data, fig }: Vo2ChartProps) {
             titleFont: { family: 'DM Mono', size: 10 },
             bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
-              label: (ctx) => `VO₂max: ${series[ctx.dataIndex].value.toFixed(1)} mL/kg/min`,
+              label: (ctx) => `VO₂max: ${ctx.parsed?.y?.toFixed(1) ?? ''} mL/kg/min`,
             },
           },
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'month', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
               color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },

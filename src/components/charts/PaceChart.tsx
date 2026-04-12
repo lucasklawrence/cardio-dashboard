@@ -4,7 +4,7 @@ import type { WorkoutSummary, Zones } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { hrZone } from '../../lib/zones';
 import { ZONE_COLORS } from '../../constants';
-import { formatPace, formatShortDate } from '../../lib/format';
+import { formatPace } from '../../lib/format';
 
 interface PaceChartProps {
   summaries: WorkoutSummary[];
@@ -21,11 +21,10 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
     return {
       type: 'line',
       data: {
-        labels: withPace.map((s) => formatShortDate(s.startDate)),
         datasets: [
           {
             label: 'Pace (min/mi)',
-            data: withPace.map((s) => s.paceMinPerMi as number),
+            data: withPace.map((s) => ({ x: s.startDate.getTime(), y: s.paceMinPerMi as number })),
             borderColor: '#eab308',
             backgroundColor: 'rgba(234, 179, 8, 0.08)',
             fill: true,
@@ -35,7 +34,7 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
             pointBackgroundColor: withPace.map(
               (s) => ZONE_COLORS[hrZone(s.avgHR, zones)],
             ),
-            borderWidth: 2,
+            borderWidth: 1.5,
           },
         ],
       },
@@ -48,8 +47,8 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
             backgroundColor: '#1a1a1d',
             borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
-            titleFont: { family: 'DM Mono' },
-            bodyFont: { family: 'DM Mono' },
+            titleFont: { family: 'DM Mono', size: 10 },
+            bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
               label: (ctx) => {
                 const s = withPace[ctx.dataIndex];
@@ -64,6 +63,8 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'week', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
               color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
