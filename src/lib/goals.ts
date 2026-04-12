@@ -5,14 +5,25 @@ const STORAGE_KEY = 'fitness-dashboard-goals';
 function readGoals(): Record<string, number> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return {};
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(
+        ([, v]) => typeof v === 'number' && Number.isFinite(v),
+      ),
+    ) as Record<string, number>;
   } catch {
     return {};
   }
 }
 
 function writeGoals(goals: Record<string, number>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+  } catch {
+    // no-op: keep UI responsive even when persistence is unavailable
+  }
 }
 
 export function getGoal(metricId: string): number | null {

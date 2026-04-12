@@ -52,8 +52,8 @@ export function GoalInput({ value, onChange, unit }: GoalInputProps) {
           <button
             type="button"
             className="goal-clear"
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
               onChange(null);
               setEditing(false);
             }}
