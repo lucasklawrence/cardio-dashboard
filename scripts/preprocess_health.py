@@ -174,13 +174,18 @@ def parse_health_xml(xml_text):
     # ─── HRV (SDNN) ───
     log("Parsing HRV (SDNN)...", end='')
     hrv_regex = re.compile(
-        r'<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"'
+        r'<Record\b[^>]*type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*>'
     )
     count = 0
     for m in hrv_regex.finditer(xml_text):
+        record = m.group(0)
+        date_m = re.search(r'\bstartDate="([^"]*)"', record)
+        val_m = re.search(r'\bvalue="([^"]*)"', record)
+        if not date_m or not val_m:
+            continue
         data['hrv'].append({
-            'd': m.group(1),
-            'v': round(float(m.group(2)), 2)
+            'd': date_m.group(1),
+            'v': round(float(val_m.group(1)), 2)
         })
         count += 1
     log(f" {count:,} found")
@@ -188,13 +193,18 @@ def parse_health_xml(xml_text):
     # ─── Walking heart rate average ───
     log("Parsing walking heart rate...", end='')
     whr_regex = re.compile(
-        r'<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"'
+        r'<Record\b[^>]*type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*>'
     )
     count = 0
     for m in whr_regex.finditer(xml_text):
+        record = m.group(0)
+        date_m = re.search(r'\bstartDate="([^"]*)"', record)
+        val_m = re.search(r'\bvalue="([^"]*)"', record)
+        if not date_m or not val_m:
+            continue
         data['walkingHR'].append({
-            'd': m.group(1),
-            'b': round(float(m.group(2)), 1)
+            'd': date_m.group(1),
+            'b': round(float(val_m.group(1)), 1)
         })
         count += 1
     log(f" {count:,} found")
@@ -213,8 +223,13 @@ def parse_health_xml(xml_text):
         if not date_m or not val_m:
             continue
         val = float(val_m.group(1))
-        unit = unit_m.group(1) if unit_m else 'lb'
-        lbs = val if unit == 'lb' else val * 2.20462
+        unit = (unit_m.group(1).strip().lower() if unit_m else 'lb')
+        if unit == 'lb':
+            lbs = val
+        elif unit == 'kg':
+            lbs = val * 2.20462
+        else:
+            continue
         data['bodyMass'].append({
             'd': date_m.group(1),
             'lb': round(lbs, 1)

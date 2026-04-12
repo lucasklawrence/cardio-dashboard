@@ -152,11 +152,15 @@ export async function parseHealthXml(
   onProgress('hrv', 'active');
   await tick();
   const hrvRegex =
-    /<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+    /<Record\b[^>]*type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*>/g;
   while ((match = hrvRegex.exec(xml)) !== null) {
+    const record = match[0];
+    const dateM = record.match(/\bstartDate="([^"]*)"/);
+    const valueM = record.match(/\bvalue="([^"]*)"/);
+    if (!dateM || !valueM) continue;
     data.hrv.push({
-      date: new Date(match[1]),
-      value: parseFloat(match[2]),
+      date: new Date(dateM[1]),
+      value: parseFloat(valueM[1]),
     });
   }
   onProgress('hrv', 'done', data.hrv.length);
@@ -166,11 +170,15 @@ export async function parseHealthXml(
   onProgress('walkhr', 'active');
   await tick();
   const walkHrRegex =
-    /<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+    /<Record\b[^>]*type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*>/g;
   while ((match = walkHrRegex.exec(xml)) !== null) {
+    const record = match[0];
+    const dateM = record.match(/\bstartDate="([^"]*)"/);
+    const valueM = record.match(/\bvalue="([^"]*)"/);
+    if (!dateM || !valueM) continue;
     data.walkingHR.push({
-      date: new Date(match[1]),
-      bpm: parseFloat(match[2]),
+      date: new Date(dateM[1]),
+      bpm: parseFloat(valueM[1]),
     });
   }
   onProgress('walkhr', 'done', data.walkingHR.length);
@@ -188,11 +196,17 @@ export async function parseHealthXml(
     const unitM = attrs.match(/unit="([^"]*)"/);
     if (!dateM || !valM) continue;
     const val = parseFloat(valM[1]);
+    const date = new Date(dateM[1]);
+    if (!Number.isFinite(val) || Number.isNaN(date.getTime())) continue;
+
     const unit = unitM ? unitM[1] : 'lb';
-    data.bodyMass.push({
-      date: new Date(dateM[1]),
-      lbs: unit === 'lb' ? val : val * 2.20462,
-    });
+    const lbs =
+      unit === 'lb' ? val :
+      unit === 'kg' ? val * 2.20462 :
+      NaN;
+    if (!Number.isFinite(lbs)) continue;
+
+    data.bodyMass.push({ date, lbs });
   }
   onProgress('mass', 'done', data.bodyMass.length);
   await tick();

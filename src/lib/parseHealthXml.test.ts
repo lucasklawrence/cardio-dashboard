@@ -51,4 +51,62 @@ describe('parseHealthXml body mass', () => {
     const data = await parseHealthXml(xml, noopProgress);
     expect(data.bodyMass).toHaveLength(0);
   });
+
+  it('skips records with unknown unit', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierBodyMass" startDate="2026-01-15T08:00:00" value="100" unit="st"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.bodyMass).toHaveLength(0);
+  });
+
+  it('skips records with invalid value', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierBodyMass" startDate="2026-01-15T08:00:00" value="abc" unit="lb"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.bodyMass).toHaveLength(0);
+  });
+});
+
+describe('parseHealthXml HRV', () => {
+  it('parses HRV with standard attribute order', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN" startDate="2026-01-15T08:00:00" value="42.5"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.hrv).toHaveLength(1);
+    expect(data.hrv[0].value).toBeCloseTo(42.5);
+  });
+
+  it('parses HRV with value before startDate (different attribute order)', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN" value="55" startDate="2026-02-01T10:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.hrv).toHaveLength(1);
+    expect(data.hrv[0].value).toBeCloseTo(55);
+    expect(data.hrv[0].date).toEqual(new Date('2026-02-01T10:00:00'));
+  });
+});
+
+describe('parseHealthXml walking HR', () => {
+  it('parses walking HR with standard attribute order', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage" startDate="2026-01-15T08:00:00" value="105.3"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.walkingHR).toHaveLength(1);
+    expect(data.walkingHR[0].bpm).toBeCloseTo(105.3);
+  });
+
+  it('parses walking HR with value before startDate (different attribute order)', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage" value="98" startDate="2026-03-10T12:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.walkingHR).toHaveLength(1);
+    expect(data.walkingHR[0].bpm).toBeCloseTo(98);
+    expect(data.walkingHR[0].date).toEqual(new Date('2026-03-10T12:00:00'));
+  });
 });
