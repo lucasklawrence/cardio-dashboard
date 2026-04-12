@@ -28,6 +28,9 @@ def parse_health_xml(xml_text):
         'restingHR': [],
         'workouts': [],
         'vo2max': [],
+        'hrv': [],
+        'walkingHR': [],
+        'bodyMass': [],
     }
 
     total_len = len(xml_text)
@@ -168,6 +171,51 @@ def parse_health_xml(xml_text):
         count += 1
     log(f" {count:,} found")
 
+    # ─── HRV (SDNN) ───
+    log("Parsing HRV (SDNN)...", end='')
+    hrv_regex = re.compile(
+        r'<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"'
+    )
+    count = 0
+    for m in hrv_regex.finditer(xml_text):
+        data['hrv'].append({
+            'd': m.group(1),
+            'v': round(float(m.group(2)), 2)
+        })
+        count += 1
+    log(f" {count:,} found")
+
+    # ─── Walking heart rate average ───
+    log("Parsing walking heart rate...", end='')
+    whr_regex = re.compile(
+        r'<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"'
+    )
+    count = 0
+    for m in whr_regex.finditer(xml_text):
+        data['walkingHR'].append({
+            'd': m.group(1),
+            'b': round(float(m.group(2)), 1)
+        })
+        count += 1
+    log(f" {count:,} found")
+
+    # ─── Body mass ───
+    log("Parsing body mass...", end='')
+    mass_regex = re.compile(
+        r'<Record type="HKQuantityTypeIdentifierBodyMass"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"[^>]*unit="([^"]*)"'
+    )
+    count = 0
+    for m in mass_regex.finditer(xml_text):
+        val = float(m.group(2))
+        unit = m.group(3)
+        lbs = val if unit == 'lb' else val * 2.20462
+        data['bodyMass'].append({
+            'd': m.group(1),
+            'lb': round(lbs, 1)
+        })
+        count += 1
+    log(f" {count:,} found")
+
     return data
 
 
@@ -242,6 +290,9 @@ def main():
     print(f"    Resting HR:         {len(data['restingHR']):,}")
     print(f"    Workouts:           {len(data['workouts']):,}")
     print(f"    VO2max readings:    {len(data['vo2max']):,}")
+    print(f"    HRV (SDNN):         {len(data['hrv']):,}")
+    print(f"    Walking HR avg:     {len(data['walkingHR']):,}")
+    print(f"    Body mass:          {len(data['bodyMass']):,}")
     print(f"")
     print(f"  Now open the dashboard and drop in {os.path.basename(output_path)}")
     print(f"{'='*50}\n")

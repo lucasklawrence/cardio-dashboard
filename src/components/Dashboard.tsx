@@ -20,6 +20,9 @@ import { DataSummary } from './DataSummary';
 
 import { RhrChart } from './charts/RhrChart';
 import { Vo2Chart } from './charts/Vo2Chart';
+import { HrvChart } from './charts/HrvChart';
+import { WalkingHrChart } from './charts/WalkingHrChart';
+import { BodyMassChart } from './charts/BodyMassChart';
 import { SessionHrChart } from './charts/SessionHrChart';
 import { PaceChart } from './charts/PaceChart';
 import { EfficiencyChart } from './charts/EfficiencyChart';
@@ -86,11 +89,14 @@ export function Dashboard() {
 
     const rhr = applyDateFilter(healthData.restingHR, (r) => r.date, dateFrom, dateTo);
     const vo2 = applyDateFilter(healthData.vo2max, (v) => v.date, dateFrom, dateTo);
+    const hrv = applyDateFilter(healthData.hrv, (h) => h.date, dateFrom, dateTo);
+    const walkingHR = applyDateFilter(healthData.walkingHR, (w) => w.date, dateFrom, dateTo);
+    const bodyMass = applyDateFilter(healthData.bodyMass, (b) => b.date, dateFrom, dateTo);
 
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
 
-    return { summaries, rhr, vo2, overallZones };
+    return { summaries, rhr, vo2, hrv, walkingHR, bodyMass, overallZones };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
   const tabCounts = useMemo(() => {
@@ -119,7 +125,7 @@ export function Dashboard() {
 
   if (!healthData || !view) return null;
 
-  const { summaries, rhr, vo2, overallZones } = view;
+  const { summaries, rhr, vo2, hrv, walkingHR, bodyMass, overallZones } = view;
   const totalSessions = summaries.length;
 
   return (
@@ -153,6 +159,9 @@ export function Dashboard() {
             <>
               {rhr.length > 1 && <RhrChart data={rhr} />}
               {vo2.length > 1 && <Vo2Chart data={vo2} />}
+              {hrv.length > 1 && <HrvChart data={hrv} />}
+              {walkingHR.length > 1 && <WalkingHrChart data={walkingHR} />}
+              {bodyMass.length > 1 && <BodyMassChart data={bodyMass} />}
 
               {SUB_ACTIVITIES.map((act) => {
                 const actSummaries = summaries.filter((s) => matchesTab(s.type, act));

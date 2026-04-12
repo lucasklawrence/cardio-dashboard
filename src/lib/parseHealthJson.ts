@@ -10,6 +10,11 @@ interface CompactVo2 {
   v: number;
 }
 
+interface CompactMass {
+  d: string;
+  lb: number;
+}
+
 interface CompactWorkout {
   t: string;
   dur: number;
@@ -28,6 +33,9 @@ interface CompactHealthData {
   restingHR?: CompactSample[];
   workouts?: CompactWorkout[];
   vo2max?: CompactVo2[];
+  hrv?: CompactVo2[];
+  walkingHR?: CompactSample[];
+  bodyMass?: CompactMass[];
 }
 
 export function hydrateHealthJson(raw: CompactHealthData): HealthData {
@@ -56,6 +64,18 @@ export function hydrateHealthJson(raw: CompactHealthData): HealthData {
     vo2max: (raw.vo2max || []).map((s) => ({
       date: new Date(s.d),
       value: s.v,
+    })),
+    hrv: (raw.hrv || []).map((s) => ({
+      date: new Date(s.d),
+      value: s.v,
+    })),
+    walkingHR: (raw.walkingHR || []).map((s) => ({
+      date: new Date(s.d),
+      bpm: s.b,
+    })),
+    bodyMass: (raw.bodyMass || []).map((s) => ({
+      date: new Date(s.d),
+      lbs: s.lb,
     })),
   };
 }

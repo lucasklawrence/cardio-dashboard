@@ -12,6 +12,9 @@ export async function parseHealthXml(
     workouts: [],
     stepCounts: [],
     vo2max: [],
+    hrv: [],
+    walkingHR: [],
+    bodyMass: [],
   };
 
   const workoutsByStart = new Map<string, Workout[]>();
@@ -145,6 +148,50 @@ export async function parseHealthXml(
   onProgress('vo2', 'done', data.vo2max.length);
   await tick();
 
+  // HRV (SDNN)
+  onProgress('hrv', 'active');
+  await tick();
+  const hrvRegex =
+    /<Record type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  while ((match = hrvRegex.exec(xml)) !== null) {
+    data.hrv.push({
+      date: new Date(match[1]),
+      value: parseFloat(match[2]),
+    });
+  }
+  onProgress('hrv', 'done', data.hrv.length);
+  await tick();
+
+  // Walking heart rate average
+  onProgress('walkhr', 'active');
+  await tick();
+  const walkHrRegex =
+    /<Record type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  while ((match = walkHrRegex.exec(xml)) !== null) {
+    data.walkingHR.push({
+      date: new Date(match[1]),
+      bpm: parseFloat(match[2]),
+    });
+  }
+  onProgress('walkhr', 'done', data.walkingHR.length);
+  await tick();
+
+  // Body mass
+  onProgress('mass', 'active');
+  await tick();
+  const massRegex =
+    /<Record type="HKQuantityTypeIdentifierBodyMass"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"[^>]*unit="([^"]*)"/g;
+  while ((match = massRegex.exec(xml)) !== null) {
+    const val = parseFloat(match[2]);
+    const unit = match[3];
+    data.bodyMass.push({
+      date: new Date(match[1]),
+      lbs: unit === 'lb' ? val : val * 2.20462,
+    });
+  }
+  onProgress('mass', 'done', data.bodyMass.length);
+  await tick();
+
   // Step counts
   onProgress('steps', 'active');
   await tick();
@@ -172,6 +219,9 @@ export async function parseHealthXml(
   data.restingHR.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.workouts.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   data.vo2max.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.hrv.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.walkingHR.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.bodyMass.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.stepCounts.sort((a, b) => a.date.getTime() - b.date.getTime());
   onProgress('sort', 'done');
   await tick();
