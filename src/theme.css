@@ -56,9 +56,22 @@ body::after {
 }
 
 .app {
-  max-width: 960px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 48px 24px;
+}
+
+/* ── Charts Grid ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Header ── */
@@ -613,9 +626,7 @@ header .version {
 }
 
 /* ── Responsive ── */
-@media (max-width: 600px) {
-  .app { padding: 24px 16px; }
-  header h1 { font-size: 10px; }
+@media (max-width: 768px) {
   .stats-grid {
     flex-wrap: wrap;
     border: none;
@@ -630,6 +641,12 @@ header .version {
     text-align: left;
   }
   .stat-card .value { font-size: 36px; }
+}
+
+@media (max-width: 600px) {
+  .app { padding: 24px 16px; }
+  header h1 { font-size: 10px; }
+  .stat-card { flex: 0 0 100%; }
   .chart-container canvas { height: 180px !important; }
   .upload-zone .upload-title { font-size: 24px; }
 }

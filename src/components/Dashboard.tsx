@@ -57,23 +57,23 @@ function ActivityCharts({ summaries, zones, figStart }: ActivityChartsProps) {
   let fig = figStart;
 
   return (
-    <>
+    <div className="charts-grid">
       {summaries.length > 1 && (
-        <div className="chart-container" style={{ marginBottom: 12 }}>
+        <div className="chart-container">
           <span className="fig-label">FIG. {String(fig++).padStart(2, '0')}</span>
           <p className="chart-caption">Avg HR per session</p>
           <SessionHrChart summaries={summaries} zones={zones} />
         </div>
       )}
       {withPace.length > 1 && (
-        <div className="chart-container" style={{ marginBottom: 12 }}>
+        <div className="chart-container">
           <span className="fig-label">FIG. {String(fig++).padStart(2, '0')}</span>
           <p className="chart-caption">Pace trend — min/mile</p>
           <PaceChart summaries={summaries} zones={zones} />
         </div>
       )}
       {withEff.length > 2 && (
-        <div className="chart-container" style={{ marginBottom: 12 }}>
+        <div className="chart-container">
           <span className="fig-label">FIG. {String(fig++).padStart(2, '0')}</span>
           <p className="chart-caption">Cardiac efficiency — meters per heartbeat</p>
           <EfficiencyChart summaries={summaries} />
@@ -86,7 +86,7 @@ function ActivityCharts({ summaries, zones, figStart }: ActivityChartsProps) {
           <PaceHrScatter summaries={summaries} />
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -186,31 +186,23 @@ export function Dashboard() {
 
           {activeTab === 'all' ? (
             <>
-              {rhr.length > 1 && (
-                <div className="dashboard-section">
+              <div className="charts-grid dashboard-section">
+                {rhr.length > 1 && (
                   <RhrChart data={rhr} fig={figCounter++} />
-                </div>
-              )}
-              {vo2.length > 1 && (
-                <div className="dashboard-section">
+                )}
+                {vo2.length > 1 && (
                   <Vo2Chart data={vo2} fig={figCounter++} />
-                </div>
-              )}
-              {hrv.length > 1 && (
-                <div className="dashboard-section">
+                )}
+                {hrv.length > 1 && (
                   <HrvChart data={hrv} fig={figCounter++} />
-                </div>
-              )}
-              {walkingHR.length > 1 && (
-                <div className="dashboard-section">
+                )}
+                {walkingHR.length > 1 && (
                   <WalkingHrChart data={walkingHR} fig={figCounter++} />
-                </div>
-              )}
-              {bodyMass.length > 1 && (
-                <div className="dashboard-section">
+                )}
+                {bodyMass.length > 1 && (
                   <BodyMassChart data={bodyMass} fig={figCounter++} />
-                </div>
-              )}
+                )}
+              </div>
 
               {SUB_ACTIVITIES.map((act) => {
                 const actSummaries = summaries.filter((s) => matchesTab(s.type, act));
@@ -229,9 +221,9 @@ export function Dashboard() {
               })}
             </>
           ) : (
-            <>
+            <div className="charts-grid dashboard-section">
               {summaries.length > 1 && (
-                <div className="section dashboard-section">
+                <div className="section">
                   <div className="section-header">
                     <h2>Avg HR Per Session</h2>
                     <span className="meta">Tracking cardiac efficiency over time</span>
@@ -244,7 +236,7 @@ export function Dashboard() {
               )}
               {summaries.filter((s) => s.paceMinPerMi && s.paceMinPerMi < 30).length >
                 1 && (
-                <div className="section dashboard-section">
+                <div className="section">
                   <div className="section-header">
                     <h2>Pace Trend</h2>
                     <span className="meta">Min/mile — lower is faster</span>
@@ -257,7 +249,7 @@ export function Dashboard() {
               )}
               {summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0)
                 .length > 2 && (
-                <div className="section dashboard-section">
+                <div className="section">
                   <div className="section-header">
                     <h2>Cardiac Efficiency</h2>
                     <span className="meta">Meters per heartbeat — higher = fitter</span>
@@ -270,7 +262,7 @@ export function Dashboard() {
               )}
               {summaries.filter((s) => s.paceMinPerMi && s.paceMinPerMi < 30).length >
                 2 && (
-                <div className="section dashboard-section">
+                <div className="section">
                   <div className="section-header">
                     <h2>Pace at Heart Rate</h2>
                     <span className="meta">
@@ -283,7 +275,7 @@ export function Dashboard() {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           <div className="dashboard-section">
