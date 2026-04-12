@@ -30,10 +30,12 @@ import { PaceHrScatter } from './charts/PaceHrScatter';
 
 const SUB_ACTIVITIES: ActivityTab[] = ['stairs', 'run', 'walk'];
 
+function hasRenderablePace(s: WorkoutSummary) {
+  return !!s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30;
+}
+
 function countActivityCharts(summaries: WorkoutSummary[]) {
-  const withPace = summaries.filter(
-    (s) => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30,
-  );
+  const withPace = summaries.filter(hasRenderablePace);
   const withEff = summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0);
   return (
     (summaries.length > 1 ? 1 : 0) +
@@ -50,9 +52,7 @@ interface ActivityChartsProps {
 }
 
 function ActivityCharts({ summaries, zones, figStart }: ActivityChartsProps) {
-  const withPace = summaries.filter(
-    (s) => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30,
-  );
+  const withPace = summaries.filter(hasRenderablePace);
   const withEff = summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0);
   let fig = figStart;
 
@@ -234,7 +234,7 @@ export function Dashboard() {
                   </div>
                 </div>
               )}
-              {summaries.filter((s) => s.paceMinPerMi && s.paceMinPerMi < 30).length >
+              {summaries.filter(hasRenderablePace).length >
                 1 && (
                 <div className="section">
                   <div className="section-header">
@@ -260,7 +260,7 @@ export function Dashboard() {
                   </div>
                 </div>
               )}
-              {summaries.filter((s) => s.paceMinPerMi && s.paceMinPerMi < 30).length >
+              {summaries.filter(hasRenderablePace).length >
                 2 && (
                 <div className="section">
                   <div className="section-header">

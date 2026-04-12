@@ -12,6 +12,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/dm-mono": "^5.2.7",
+    "@fontsource/instrument-serif": "^5.2.8",
     "chart.js": "^4.4.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^4.1.0",
