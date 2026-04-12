@@ -173,6 +173,16 @@ describe('parseHealthXml step counts', () => {
     const data = await parseHealthXml(xml, noopProgress);
     expect(data.stepCounts).toHaveLength(0);
   });
+
+  it('parses step records when value appears before startDate', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierStepCount" value="5000" startDate="2026-01-15T08:00:00"/>' +
+      '<Record type="HKQuantityTypeIdentifierStepCount" value="3000" startDate="2026-01-15T14:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.stepCounts).toHaveLength(1);
+    expect(data.stepCounts[0].count).toBe(8000);
+  });
 });
 
 describe('parseHealthXml sleep', () => {
