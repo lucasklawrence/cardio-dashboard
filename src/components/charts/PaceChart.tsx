@@ -18,6 +18,10 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
       .filter((s) => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30)
       .slice(-30);
     if (withPace.length < 2) return null;
+    const paceByTs = new Map(withPace.map((s) => [s.startDate.getTime(), s]));
+    const chartPoints = insertGapBreaks(
+      withPace.map((s) => ({ x: s.startDate.getTime(), y: s.paceMinPerMi as number })),
+    );
 
     return {
       type: 'line',
@@ -25,7 +29,7 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         datasets: [
           {
             label: 'Pace (min/mi)',
-            data: insertGapBreaks(withPace.map((s) => ({ x: s.startDate.getTime(), y: s.paceMinPerMi as number }))),
+            data: chartPoints,
             borderColor: '#eab308',
             backgroundColor: 'rgba(234, 179, 8, 0.08)',
             fill: true,
@@ -34,9 +38,10 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
             cubicInterpolationMode: 'monotone' as const,
             pointRadius: 3,
             pointHoverRadius: 5,
-            pointBackgroundColor: withPace.map(
-              (s) => ZONE_COLORS[hrZone(s.avgHR, zones)],
-            ),
+            pointBackgroundColor: chartPoints.map((p) => {
+              const s = paceByTs.get(p.x);
+              return s ? ZONE_COLORS[hrZone(s.avgHR, zones)] : 'transparent';
+            }),
             borderWidth: 1.5,
           },
         ],
@@ -54,11 +59,13 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
             bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
               label: (ctx) => {
-                const s = withPace[ctx.dataIndex];
+                const s = paceByTs.get(Number(ctx.parsed?.x));
+                if (!s) return '';
                 return `${s.paceStr} /mi @ ${s.avgHR} bpm avg`;
               },
               afterLabel: (ctx) => {
-                const s = withPace[ctx.dataIndex];
+                const s = paceByTs.get(Number(ctx.parsed?.x));
+                if (!s) return '';
                 return s.distMi ? `${s.distMi.toFixed(2)} mi in ${s.durationMin} min` : '';
               },
             },

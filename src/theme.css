@@ -595,6 +595,23 @@ header .version {
   color: var(--z5);
 }
 
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .upload-zone.dragging,
+  .loading .spinner,
+  .dashboard-section {
+    animation: none !important;
+  }
+
+  .progress-stage,
+  .zone-bar div,
+  .tab,
+  .date-filter .preset-btn,
+  .upload-zone {
+    transition: none !important;
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .app { padding: 24px 16px; }

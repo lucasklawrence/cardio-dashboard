@@ -14,6 +14,7 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
       .filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0)
       .slice(-30);
     if (withEff.length < 2) return null;
+    const effByTs = new Map(withEff.map((s) => [s.startDate.getTime(), s]));
 
     return {
       type: 'line',
@@ -50,7 +51,8 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
             bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
               label: (ctx) => {
-                const s = withEff[ctx.dataIndex];
+                const s = effByTs.get(Number(ctx.parsed?.x));
+                if (!s) return '';
                 return `${(s.cardiacEfficiency as number).toFixed(2)} m/beat @ ${s.avgHR} bpm`;
               },
             },

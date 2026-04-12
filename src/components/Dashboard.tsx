@@ -27,6 +27,19 @@ import { PaceHrScatter } from './charts/PaceHrScatter';
 
 const SUB_ACTIVITIES: ActivityTab[] = ['stairs', 'run', 'walk'];
 
+function countActivityCharts(summaries: WorkoutSummary[]) {
+  const withPace = summaries.filter(
+    (s) => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30,
+  );
+  const withEff = summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0);
+  return (
+    (summaries.length > 1 ? 1 : 0) +
+    (withPace.length > 1 ? 1 : 0) +
+    (withEff.length > 2 ? 1 : 0) +
+    (withPace.length > 2 ? 1 : 0)
+  );
+}
+
 interface ActivityChartsProps {
   summaries: WorkoutSummary[];
   zones: ReturnType<typeof useHealthDataContext>['zones'];
@@ -182,7 +195,7 @@ export function Dashboard() {
                 const actSummaries = summaries.filter((s) => matchesTab(s.type, act));
                 if (actSummaries.length === 0) return null;
                 const startFig = figCounter;
-                figCounter += 4;
+                figCounter += countActivityCharts(actSummaries);
                 return (
                   <div className="section dashboard-section" key={act}>
                     <div className="section-header">
