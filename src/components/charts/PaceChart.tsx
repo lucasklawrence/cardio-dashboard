@@ -4,7 +4,8 @@ import type { WorkoutSummary, Zones } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { hrZone } from '../../lib/zones';
 import { ZONE_COLORS } from '../../constants';
-import { formatPace, formatShortDate } from '../../lib/format';
+import { formatPace } from '../../lib/format';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface PaceChartProps {
   summaries: WorkoutSummary[];
@@ -17,25 +18,31 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
       .filter((s) => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30)
       .slice(-30);
     if (withPace.length < 2) return null;
+    const paceByTs = new Map(withPace.map((s) => [s.startDate.getTime(), s]));
+    const chartPoints = insertGapBreaks(
+      withPace.map((s) => ({ x: s.startDate.getTime(), y: s.paceMinPerMi as number })),
+    );
 
     return {
       type: 'line',
       data: {
-        labels: withPace.map((s) => formatShortDate(s.startDate)),
         datasets: [
           {
             label: 'Pace (min/mi)',
-            data: withPace.map((s) => s.paceMinPerMi as number),
-            borderColor: '#d4a843',
-            backgroundColor: 'rgba(212, 168, 67, 0.1)',
+            data: chartPoints,
+            borderColor: '#eab308',
+            backgroundColor: 'rgba(234, 179, 8, 0.08)',
             fill: true,
-            tension: 0.3,
+            spanGaps: false,
+            tension: 0.4,
+            cubicInterpolationMode: 'monotone' as const,
             pointRadius: 3,
             pointHoverRadius: 5,
-            pointBackgroundColor: withPace.map(
-              (s) => ZONE_COLORS[hrZone(s.avgHR, zones)],
-            ),
-            borderWidth: 2,
+            pointBackgroundColor: chartPoints.map((p) => {
+              const s = paceByTs.get(p.x);
+              return s ? ZONE_COLORS[hrZone(s.avgHR, zones)] : 'transparent';
+            }),
+            borderWidth: 1.5,
           },
         ],
       },
@@ -45,18 +52,20 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
-            titleFont: { family: 'DM Mono' },
-            bodyFont: { family: 'DM Mono' },
+            titleFont: { family: 'DM Mono', size: 10 },
+            bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
               label: (ctx) => {
-                const s = withPace[ctx.dataIndex];
+                const s = paceByTs.get(Number(ctx.parsed?.x));
+                if (!s) return '';
                 return `${s.paceStr} /mi @ ${s.avgHR} bpm avg`;
               },
               afterLabel: (ctx) => {
-                const s = withPace[ctx.dataIndex];
+                const s = paceByTs.get(Number(ctx.parsed?.x));
+                if (!s) return '';
                 return s.distMi ? `${s.distMi.toFixed(2)} mi in ${s.durationMin} min` : '';
               },
             },
@@ -64,25 +73,27 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'week', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               maxTicksLimit: 8,
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
           },
           y: {
             reverse: true,
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               callback: (v) => formatPace(Number(v)),
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             title: {
               display: true,
               text: 'min/mile (lower = faster)',
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
             },
           },

@@ -10,10 +10,16 @@ const PRESETS: { label: string; months: number }[] = [
 ];
 
 export function DateFilter() {
-  const { dateFrom, dateTo, setDateFrom, setDateTo, setDatePreset } =
+  const { dateFrom, dateTo, setDateFrom, setDateTo, setDatePreset, setDateYTD } =
     useHealthDataContext();
 
   const noPreset = !dateFrom && !dateTo;
+  const isYTD =
+    dateFrom !== null &&
+    dateTo === null &&
+    dateFrom.getMonth() === 0 &&
+    dateFrom.getDate() === 1 &&
+    dateFrom.getFullYear() === new Date().getFullYear();
 
   return (
     <div className="date-filter">
@@ -44,6 +50,13 @@ export function DateFilter() {
             {p.label}
           </button>
         ))}
+        <button
+          type="button"
+          className={`preset-btn${isYTD ? ' active' : ''}`}
+          onClick={() => setDateYTD()}
+        >
+          YTD
+        </button>
       </div>
     </div>
   );

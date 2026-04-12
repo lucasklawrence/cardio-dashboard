@@ -74,6 +74,21 @@ describe('hydrateHealthJson', () => {
     expect(data.bodyMass).toHaveLength(1);
     expect(data.bodyMass[0].lbs).toBe(175.5);
     expect(data.bodyMass[0].date).toBeInstanceOf(Date);
+
+  });
+
+  it('sorts resting HR by date', () => {
+    const raw = {
+      restingHR: [
+        { d: '2026-06-01T00:00:00', b: 50 },
+        { d: '2026-01-01T00:00:00', b: 60 },
+      ],
+    };
+    const data = hydrateHealthJson(raw);
+    expect(data.restingHR.map((s) => s.date.getTime())).toEqual([
+      new Date('2026-01-01T00:00:00').getTime(),
+      new Date('2026-06-01T00:00:00').getTime(),
+    ]);
   });
 
   it('handles empty/missing arrays', () => {

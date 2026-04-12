@@ -2,15 +2,16 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { RestingHrSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
-import { formatShortDate } from '../../lib/format';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface RhrChartProps {
   data: RestingHrSample[];
+  fig: number;
 }
 
 const MAX_POINTS = 90;
 
-export function RhrChart({ data }: RhrChartProps) {
+export function RhrChart({ data, fig }: RhrChartProps) {
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (data.length < 2) return null;
 
@@ -23,18 +24,19 @@ export function RhrChart({ data }: RhrChartProps) {
     return {
       type: 'line',
       data: {
-        labels: series.map((d) => formatShortDate(d.date)),
         datasets: [
           {
             label: 'Resting HR',
-            data: series.map((d) => d.bpm),
-            borderColor: '#2d9b6e',
-            backgroundColor: 'rgba(45, 155, 110, 0.1)',
+            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.bpm }))),
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34, 197, 94, 0.08)',
             fill: true,
-            tension: 0.3,
+            spanGaps: false,
+            tension: 0.4,
+            cubicInterpolationMode: 'monotone' as const,
             pointRadius: 1.5,
             pointHoverRadius: 4,
-            borderWidth: 2,
+            borderWidth: 1.5,
           },
         ],
       },
@@ -44,25 +46,30 @@ export function RhrChart({ data }: RhrChartProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
-            titleFont: { family: 'DM Mono' },
-            bodyFont: { family: 'DM Mono' },
+            titleFont: { family: 'DM Mono', size: 10 },
+            bodyFont: { family: 'DM Mono', size: 10 },
           },
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'month', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               maxTicksLimit: 8,
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
           },
           y: {
-            ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.3)',
+              font: { family: 'DM Mono', size: 10 },
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
           },
         },
       },
@@ -79,6 +86,7 @@ export function RhrChart({ data }: RhrChartProps) {
         <span className="meta">{data.length} data points</span>
       </div>
       <div className="chart-container">
+        <span className="fig-label">FIG. {String(fig).padStart(2, '0')}</span>
         <canvas ref={ref} />
       </div>
     </div>

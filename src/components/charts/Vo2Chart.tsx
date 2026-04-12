@@ -2,15 +2,16 @@ import { useMemo } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { Vo2Sample } from '../../types';
 import { useChart } from '../../hooks/useChart';
-import { formatShortDate } from '../../lib/format';
+import { insertGapBreaks } from '../../lib/chartUtils';
 
 interface Vo2ChartProps {
   data: Vo2Sample[];
+  fig: number;
 }
 
 const MAX_POINTS = 60;
 
-export function Vo2Chart({ data }: Vo2ChartProps) {
+export function Vo2Chart({ data, fig }: Vo2ChartProps) {
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (data.length < 2) return null;
 
@@ -23,18 +24,19 @@ export function Vo2Chart({ data }: Vo2ChartProps) {
     return {
       type: 'line',
       data: {
-        labels: series.map((d) => formatShortDate(d.date)),
         datasets: [
           {
             label: 'VO₂max',
-            data: series.map((d) => d.value),
-            borderColor: '#d45a3a',
-            backgroundColor: 'rgba(212, 90, 58, 0.1)',
+            data: insertGapBreaks(series.map((d) => ({ x: d.date.getTime(), y: d.value }))),
+            borderColor: '#f97316',
+            backgroundColor: 'rgba(249, 115, 22, 0.08)',
             fill: true,
-            tension: 0.3,
+            spanGaps: false,
+            tension: 0.4,
+            cubicInterpolationMode: 'monotone' as const,
             pointRadius: 2,
             pointHoverRadius: 5,
-            borderWidth: 2,
+            borderWidth: 1.5,
           },
         ],
       },
@@ -44,32 +46,37 @@ export function Vo2Chart({ data }: Vo2ChartProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
-            titleFont: { family: 'DM Mono' },
-            bodyFont: { family: 'DM Mono' },
+            titleFont: { family: 'DM Mono', size: 10 },
+            bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
-              label: (ctx) => `VO₂max: ${series[ctx.dataIndex].value.toFixed(1)} mL/kg/min`,
+              label: (ctx) => `VO₂max: ${ctx.parsed?.y?.toFixed(1) ?? ''} mL/kg/min`,
             },
           },
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'month', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               maxTicksLimit: 8,
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
           },
           y: {
-            ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.3)',
+              font: { family: 'DM Mono', size: 10 },
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             title: {
               display: true,
               text: 'mL/kg/min',
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
             },
           },
@@ -88,6 +95,7 @@ export function Vo2Chart({ data }: Vo2ChartProps) {
         <span className="meta">{data.length} readings</span>
       </div>
       <div className="chart-container">
+        <span className="fig-label">FIG. {String(fig).padStart(2, '0')}</span>
         <canvas ref={ref} />
       </div>
     </div>

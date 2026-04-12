@@ -32,7 +32,7 @@ export function PaceHrScatter({ summaries }: PaceHrScatterProps) {
             backgroundColor: data.map((s) => {
               const age = (s.startDate.getTime() - oldest) / range;
               const alpha = 0.3 + age * 0.7;
-              return `rgba(45, 155, 110, ${alpha})`;
+              return `rgba(34, 197, 94, ${alpha})`;
             }),
             pointRadius: 6,
             pointHoverRadius: 8,
@@ -45,8 +45,8 @@ export function PaceHrScatter({ summaries }: PaceHrScatterProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
             titleFont: { family: 'DM Mono' },
             bodyFont: { family: 'DM Mono' },
@@ -64,27 +64,27 @@ export function PaceHrScatter({ summaries }: PaceHrScatterProps) {
         },
         scales: {
           x: {
-            ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.3)', font: { family: 'DM Mono', size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             title: {
               display: true,
               text: 'Avg Heart Rate (bpm)',
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
             },
           },
           y: {
             reverse: true,
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               callback: (v) => formatPace(Number(v)),
             },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             title: {
               display: true,
               text: 'Pace (min/mi) — lower = faster',
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
             },
           },
