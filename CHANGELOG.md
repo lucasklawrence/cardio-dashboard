@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-04-12
+
+### Added
+
+- Clinical Broadsheet aesthetic: film grain + vignette overlay, editorial stat numerals with hairline separators
+- FIG. counters on all charts with accurate numbering per rendered chart
+- Typographic tabs with accent underlines and staggered reveal animations
+- Time-scale X axis on all charts so temporal gaps render proportionally (via `date-fns` + `chartjs-adapter-date-fns`)
+- YTD date preset button
+- `prefers-reduced-motion` media query for accessibility
+
+### Changed
+
+- Refined color palette: brighter zone colors, subtler grid lines, minimal chart chrome
+- Charts use monotone cubic interpolation and `insertGapBreaks` for line continuity
+- Header restyled as uppercase DM Mono with version label
+- Upload zone restyled with Instrument Serif heading and dashed border
+- Stats display as large editorial numerals with hairline separators (no card backgrounds)
+- HRV, Walking HR, and Body Mass charts updated to match editorial style
+
+### Fixed
+
+- Chart tooltips now use timestamp-based lookups instead of `dataIndex` to avoid drift from `insertGapBreaks` synthetic gap points
+- Per-point zone colors in PaceChart aligned to chart data (including gap points)
+- Figure counter no longer skips numbers when fewer than 4 activity charts render
+
 ## [0.2.0] - 2026-04-12
 
 ### Added

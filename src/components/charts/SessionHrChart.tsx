@@ -4,7 +4,6 @@ import type { WorkoutSummary, Zones } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { hrZone } from '../../lib/zones';
 import { ZONE_COLORS } from '../../constants';
-import { formatShortDate } from '../../lib/format';
 
 interface SessionHrChartProps {
   summaries: WorkoutSummary[];
@@ -19,7 +18,7 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
     return {
       type: 'bar',
       data: {
-        labels: recent.map((s) => formatShortDate(s.startDate)),
+        labels: recent.map((s) => s.startDate),
         datasets: [
           {
             label: 'Avg HR',
@@ -29,7 +28,7 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
             ),
             borderColor: recent.map((s) => ZONE_COLORS[hrZone(s.avgHR, zones)]),
             borderWidth: 1,
-            borderRadius: 4,
+            borderRadius: 3,
           },
         ],
       },
@@ -39,11 +38,11 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1c1c22',
-            borderColor: '#2a2a34',
+            backgroundColor: '#1a1a1d',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
             borderWidth: 1,
-            titleFont: { family: 'DM Mono' },
-            bodyFont: { family: 'DM Mono' },
+            titleFont: { family: 'DM Mono', size: 10 },
+            bodyFont: { family: 'DM Mono', size: 10 },
             callbacks: {
               afterLabel: (ctx) => {
                 const s = recent[ctx.dataIndex];
@@ -54,16 +53,21 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
         },
         scales: {
           x: {
+            type: 'time',
+            time: { unit: 'week', tooltipFormat: 'MMM d, yyyy' },
             ticks: {
-              color: '#7a7880',
+              color: 'rgba(255, 255, 255, 0.3)',
               font: { family: 'DM Mono', size: 10 },
               maxTicksLimit: 10,
             },
             grid: { display: false },
           },
           y: {
-            ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
-            grid: { color: 'rgba(42, 42, 52, 0.5)' },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.3)',
+              font: { family: 'DM Mono', size: 10 },
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' },
             suggestedMin: 80,
           },
         },

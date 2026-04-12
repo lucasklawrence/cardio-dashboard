@@ -35,9 +35,8 @@ export function UploadZone({ onFile }: UploadZoneProps) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        <div className="icon">⬆</div>
-        <h3>Drop your export.zip or health_data.json here</h3>
-        <p>Or click to browse — Apple Health export ZIP, raw XML, or preprocessed JSON</p>
+        <div className="upload-title">Drop your export</div>
+        <p>Apple Health export ZIP, raw XML, or preprocessed JSON</p>
         <input
           ref={inputRef}
           type="file"

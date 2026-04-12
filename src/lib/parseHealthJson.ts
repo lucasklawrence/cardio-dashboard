@@ -38,12 +38,11 @@ interface CompactHealthData {
   bodyMass?: CompactMass[];
 }
 
-export function hydrateHealthJson(raw: CompactHealthData): HealthData {
-  const byDate = (a: { date: Date }, b: { date: Date }) =>
-    a.date.getTime() - b.date.getTime();
-  const byStartDate = (a: { startDate: Date }, b: { startDate: Date }) =>
-    a.startDate.getTime() - b.startDate.getTime();
+function byDate(a: { date: Date }, b: { date: Date }) {
+  return a.date.getTime() - b.date.getTime();
+}
 
+export function hydrateHealthJson(raw: CompactHealthData): HealthData {
   const heartRateSamples = (raw.heartRateSamples || []).map((s) => ({
     date: new Date(s.d),
     bpm: s.b,
@@ -83,7 +82,7 @@ export function hydrateHealthJson(raw: CompactHealthData): HealthData {
 
   heartRateSamples.sort(byDate);
   restingHR.sort(byDate);
-  workouts.sort(byStartDate);
+  workouts.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   vo2max.sort(byDate);
   hrv.sort(byDate);
   walkingHR.sort(byDate);

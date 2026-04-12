@@ -10,11 +10,11 @@ export const ACTIVITY_TABS: Record<ActivityTab, { label: string; icon: string }>
 export const ACTIVITY_TAB_ORDER: ActivityTab[] = ['all', 'stairs', 'run', 'walk'];
 
 export const ZONE_COLORS: Record<ZoneNumber, string> = {
-  1: '#3b6b8a',
-  2: '#2d9b6e',
-  3: '#d4a843',
-  4: '#d45a3a',
-  5: '#c43a5a',
+  1: '#3b82f6',
+  2: '#22c55e',
+  3: '#eab308',
+  4: '#f97316',
+  5: '#ef4444',
 };
 
 export const ZONE_NAMES: Record<ZoneNumber, string> = {

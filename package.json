@@ -1,7 +1,7 @@
 {
   "name": "fitness-dashboard",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/dm-mono": "^5.2.7",
+    "@fontsource/instrument-serif": "^5.2.8",
     "chart.js": "^4.4.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-annotation": "^3.1.0",
+    "date-fns": "^4.1.0",
     "jszip": "^3.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
