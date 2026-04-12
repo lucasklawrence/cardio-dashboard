@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardio Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap');
+
+  :root {
+    --bg: #0c0c0e;
+    --surface: #141418;
+    --surface2: #1c1c22;
+    --border: #2a2a34;
+    --text: #e8e6e1;
+    --text-dim: #7a7880;
+    --z1: #3b6b8a;
+    --z2: #2d9b6e;
+    --z3: #d4a843;
+    --z4: #d45a3a;
+    --z5: #c43a5a;
+    --accent: #2d9b6e;
+    --accent-dim: rgba(45, 155, 110, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  header {
+    margin-bottom: 48px;
+  }
+
+  header h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.1;
+  }
+
+  header h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  header p {
+    color: var(--text-dim);
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  /* Upload Zone */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 60px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .upload-zone.dragging {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    transform: scale(1.005);
+  }
+
+  .upload-zone .icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  .upload-zone h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+
+  .upload-zone p {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  .upload-zone input { display: none; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 80px 32px;
+  }
+
+  .loading .spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading p {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .progress-stage {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 12px;
+    color: var(--text-dim);
+    transition: color 0.3s;
+  }
+
+  .progress-stage.active {
+    color: var(--accent);
+  }
+
+  .progress-stage.done {
+    color: var(--z2);
+  }
+
+  .progress-stage .stage-icon {
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .progress-stage .stage-count {
+    margin-left: auto;
+    font-size: 10px;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .stat-card .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .stat-card .value {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .stat-card .unit {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 36px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    font-weight: 400;
+  }
+
+  .section-header .meta {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Chart Container */
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .chart-container canvas {
+    width: 100% !important;
+    height: 240px !important;
+  }
+
+  /* Zone Bar */
+  .zone-bar-container { margin-bottom: 16px; }
+
+  .zone-bar {
+    display: flex;
+    height: 36px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .zone-bar div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    transition: flex 0.5s ease;
+    min-width: 0;
+  }
+
+  .zone-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .zone-legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .zone-legend .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Workout Table */
+  .workout-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .workout-table th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  .workout-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .workout-table tr:last-child td { border-bottom: none; }
+
+  .workout-table tr:hover td {
+    background: var(--surface2);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .badge-z2 { background: rgba(45, 155, 110, 0.2); color: var(--z2); }
+  .badge-z3 { background: rgba(212, 168, 67, 0.2); color: var(--z3); }
+  .badge-z4 { background: rgba(212, 90, 58, 0.2); color: var(--z4); }
+  .badge-mixed { background: rgba(122, 120, 128, 0.2); color: var(--text-dim); }
+
+  /* Resting HR */
+  .rhr-trend {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .rhr-trend .delta {
+    font-size: 13px;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .rhr-trend .delta.good {
+    background: rgba(45, 155, 110, 0.15);
+    color: var(--z2);
+  }
+
+  .rhr-trend .delta.neutral {
+    background: rgba(122, 120, 128, 0.15);
+    color: var(--text-dim);
+  }
+
+  /* Zone Settings */
+  .zone-settings {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+
+  .zone-settings h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 12px;
+  }
+
+  .zone-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .zone-input label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .zone-input input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+  }
+
+  .zone-input input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-state p { font-size: 12px; }
+
+  /* Date Filter */
+  .date-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .date-filter label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+
+  .date-filter input[type="date"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color-scheme: dark;
+  }
+
+  .date-filter input[type="date"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .date-filter .date-presets {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+  }
+
+  .date-filter .preset-btn {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    transition: all 0.2s;
+  }
+
+  .date-filter .preset-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .date-filter .preset-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* Activity sub-section in All tab */
+  .activity-section {
+    margin-bottom: 28px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .activity-section-header {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .activity-section-header .count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .activity-section canvas {
+    width: 100% !important;
+    height: 200px !important;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .app { padding: 24px 16px; }
+    header h1 { font-size: 30px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .chart-container { padding: 16px; }
+    .chart-container canvas { height: 180px !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header>
+    <h1>Cardio <em>Dashboard</em></h1>
+    <p>Upload your Apple Health export to analyze heart rate zones, resting HR trends, and session data</p>
+  </header>
+
+  <div id="zone-settings" class="zone-settings" style="display:none;">
+    <h3>Heart Rate Zones</h3>
+    <div class="zone-inputs">
+      <div class="zone-input">
+        <label>Max HR</label>
+        <input type="number" id="maxHR" value="190" />
+      </div>
+      <div class="zone-input">
+        <label>Zone 1 &lt;</label>
+        <input type="number" id="z1Max" value="114" />
+      </div>
+      <div class="zone-input">
+        <label>Zone 2 &lt;</label>
+        <input type="number" id="z2Max" value="133" />
+      </div>
+      <div class="zone-input">
+        <label>Zone 3 &lt;</label>
+        <input type="number" id="z3Max" value="152" />
+      </div>
+      <div class="zone-input">
+        <label>Zone 4 &lt;</label>
+        <input type="number" id="z4Max" value="171" />
+      </div>
+    </div>
+    <p class="hint">Default zones use ~60/70/80/90% of max HR. Adjust to match your known thresholds — your Z2 ceiling around 120-130 bpm, Z4 near 160 bpm.</p>
+  </div>
+
+  <div id="upload-section">
+    <div class="upload-zone" id="dropzone">
+      <div class="icon">⬆</div>
+      <h3>Drop your export.zip or health_data.json here</h3>
+      <p>Or click to browse — Apple Health export ZIP, raw XML, or preprocessed JSON</p>
+      <input type="file" id="fileInput" accept=".zip,.xml,.json" />
+    </div>
+  </div>
+
+  <div id="loading" style="display:none;">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p id="loading-msg">Unpacking health data…</p>
+      <div id="progress-stages" style="margin-top:20px;text-align:left;display:inline-block;min-width:260px;">
+      </div>
+      <p id="loading-detail" style="margin-top:12px;font-size:11px;color:#555;"></p>
+    </div>
+  </div>
+
+  <div id="dashboard" style="display:none;"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+// ─── State ─────────────────────────────────────────────────────
+let healthData = null;
+let activeTab = 'all';
+let dateFrom = null;
+let dateTo = null;
+
+const ACTIVITY_TABS = {
+  all:    { label: 'All Cardio',      icon: '♥' },
+  stairs: { label: 'Stair Climber',   icon: '⬆' },
+  run:    { label: 'Running',         icon: '→' },
+  walk:   { label: 'Walking',         icon: '~' },
+};
+
+function matchesTab(workoutType, tab) {
+  if (tab === 'all') return matchesTab(workoutType, 'stairs') || matchesTab(workoutType, 'run') || matchesTab(workoutType, 'walk');
+  if (tab === 'stairs') return workoutType.includes('StairClimbing') || workoutType.includes('Stair') || workoutType.includes('StepperMachine') || workoutType.includes('StairStepper');
+  if (tab === 'run') return workoutType.includes('Running');
+  if (tab === 'walk') return workoutType.includes('Walking');
+  return false;
+}
+
+function getWorkoutsForTab(data, tab) {
+  return data.workouts.filter(w => matchesTab(w.type, tab));
+}
+
+function friendlyType(workoutType) {
+  if (workoutType.includes('StairClimbing') || workoutType.includes('Stair') || workoutType.includes('StepperMachine')) return 'Stairs';
+  if (workoutType.includes('Running')) return 'Run';
+  if (workoutType.includes('Walking')) return 'Walk';
+  return 'Other';
+}
+
+// ─── Zone Thresholds ───────────────────────────────────────────
+function getZones() {
+  return {
+    z1Max: parseInt(document.getElementById('z1Max').value) || 114,
+    z2Max: parseInt(document.getElementById('z2Max').value) || 133,
+    z3Max: parseInt(document.getElementById('z3Max').value) || 152,
+    z4Max: parseInt(document.getElementById('z4Max').value) || 171,
+    maxHR: parseInt(document.getElementById('maxHR').value) || 190,
+  };
+}
+
+function hrZone(bpm) {
+  const z = getZones();
+  if (bpm < z.z1Max) return 1;
+  if (bpm < z.z2Max) return 2;
+  if (bpm < z.z3Max) return 3;
+  if (bpm < z.z4Max) return 4;
+  return 5;
+}
+
+const ZONE_COLORS = {
+  1: '#3b6b8a',
+  2: '#2d9b6e',
+  3: '#d4a843',
+  4: '#d45a3a',
+  5: '#c43a5a'
+};
+
+const ZONE_NAMES = {
+  1: 'Zone 1 — Recovery',
+  2: 'Zone 2 — Aerobic Base',
+  3: 'Zone 3 — Tempo',
+  4: 'Zone 4 — Threshold',
+  5: 'Zone 5 — VO₂max'
+};
+
+// ─── File Handling ─────────────────────────────────────────────
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragging'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragging');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+async function handleFile(file) {
+  document.getElementById('upload-section').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+
+  // ─── JSON shortcut (from Python preprocessor) ───
+  if (file.name.endsWith('.json')) {
+    document.getElementById('loading-msg').textContent = 'Loading preprocessed data…';
+    document.getElementById('progress-stages').innerHTML = '';
+    const raw = JSON.parse(await file.text());
+
+    // Convert compact format back to full format
+    healthData = {
+      heartRateSamples: (raw.heartRateSamples || []).map(s => ({ date: new Date(s.d), bpm: s.b })),
+      restingHR: (raw.restingHR || []).map(s => ({ date: new Date(s.d), bpm: s.b })),
+      workouts: (raw.workouts || []).map(w => ({
+        type: w.t,
+        duration: w.dur,
+        durationUnit: w.du,
+        startDate: new Date(w.sd),
+        endDate: new Date(w.ed),
+        calories: w.cal,
+        distanceMi: w.dmi,
+        distanceKm: w.dkm,
+        elevationM: w.elev,
+        elevationFlights: w.elevF,
+      })),
+      stepCounts: [],
+      vo2max: (raw.vo2max || []).map(s => ({ date: new Date(s.d), value: s.v })),
+    };
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('zone-settings').style.display = 'block';
+    renderDashboard();
+    return;
+  }
+
+  // ─── ZIP / XML flow ───
+
+  const stages = [
+    { id: 'zip',      label: 'Decompressing ZIP' },
+    { id: 'hr',       label: 'Heart rate samples' },
+    { id: 'rhr',      label: 'Resting heart rate' },
+    { id: 'workouts', label: 'Workouts' },
+    { id: 'distance', label: 'Distance & elevation' },
+    { id: 'vo2',      label: 'VO₂max estimates' },
+    { id: 'steps',    label: 'Step counts' },
+    { id: 'sort',     label: 'Sorting & finalizing' },
+  ];
+
+  const stagesEl = document.getElementById('progress-stages');
+  stagesEl.innerHTML = stages.map(s =>
+    `<div class="progress-stage" id="stage-${s.id}">
+      <span class="stage-icon">○</span>
+      <span>${s.label}</span>
+      <span class="stage-count" id="count-${s.id}"></span>
+    </div>`
+  ).join('');
+
+  function setStage(id, status, count) {
+    const el = document.getElementById(`stage-${id}`);
+    const countEl = document.getElementById(`count-${id}`);
+    if (!el) return;
+    el.className = `progress-stage ${status}`;
+    el.querySelector('.stage-icon').textContent = status === 'done' ? '✓' : status === 'active' ? '◉' : '○';
+    if (count !== undefined && countEl) countEl.textContent = count.toLocaleString();
+  }
+
+  // Allow UI to repaint
+  const tick = () => new Promise(r => setTimeout(r, 0));
+
+  let xmlText;
+
+  // ─── Stage: ZIP ───
+  setStage('zip', 'active');
+  await tick();
+
+  if (file.name.endsWith('.zip')) {
+    const zip = await JSZip.loadAsync(file);
+    const xmlFile = Object.keys(zip.files).find(f =>
+      f.endsWith('export.xml') || f.endsWith('Export.xml') || f.toLowerCase().includes('export.xml')
+    );
+    if (!xmlFile) {
+      const anyXml = Object.keys(zip.files).find(f => f.endsWith('.xml'));
+      if (!anyXml) { alert('No export.xml found in ZIP'); location.reload(); return; }
+      xmlText = await zip.files[anyXml].async('text');
+    } else {
+      xmlText = await zip.files[xmlFile].async('text');
+    }
+  } else {
+    xmlText = await file.text();
+  }
+
+  const fileSizeMB = (xmlText.length / 1024 / 1024).toFixed(0);
+  document.getElementById('loading-detail').textContent = `XML size: ${fileSizeMB} MB`;
+  setStage('zip', 'done', `${fileSizeMB} MB`);
+  await tick();
+
+  // ─── Parse in stages ───
+  healthData = await parseHealthXMLAsync(xmlText, setStage, tick);
+  xmlText = null;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('zone-settings').style.display = 'block';
+  renderDashboard();
+}
+
+// ─── XML Parser (async with progress) ─────────────────────────
+async function parseHealthXMLAsync(xml, setStage, tick) {
+  const data = {
+    heartRateSamples: [],
+    restingHR: [],
+    workouts: [],
+    stepCounts: [],
+    vo2max: []
+  };
+
+  let match;
+
+  // ─── Heart rate samples ───
+  setStage('hr', 'active');
+  await tick();
+  const hrRegex = /<Record type="HKQuantityTypeIdentifierHeartRate"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  let hrCount = 0;
+  while ((match = hrRegex.exec(xml)) !== null) {
+    data.heartRateSamples.push({
+      date: new Date(match[1]),
+      bpm: parseFloat(match[2])
+    });
+    hrCount++;
+    if (hrCount % 50000 === 0) {
+      setStage('hr', 'active', hrCount);
+      await tick();
+    }
+  }
+  setStage('hr', 'done', hrCount);
+  await tick();
+
+  // ─── Resting heart rate ───
+  setStage('rhr', 'active');
+  await tick();
+  const rhrRegex = /<Record type="HKQuantityTypeIdentifierRestingHeartRate"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  while ((match = rhrRegex.exec(xml)) !== null) {
+    data.restingHR.push({
+      date: new Date(match[1]),
+      bpm: parseFloat(match[2])
+    });
+  }
+  setStage('rhr', 'done', data.restingHR.length);
+  await tick();
+
+  // ─── Workouts ───
+  setStage('workouts', 'active');
+  await tick();
+  const workoutRegex = /<Workout\s([^>]+)>/g;
+  while ((match = workoutRegex.exec(xml)) !== null) {
+    const attrs = match[1];
+    const get = (name) => { const m = attrs.match(new RegExp(`${name}="([^"]*)"`)); return m ? m[1] : null; };
+
+    const type = get('workoutActivityType');
+    const startDate = get('startDate');
+    const endDate = get('endDate');
+    if (!type || !startDate || !endDate) continue;
+
+    data.workouts.push({
+      type,
+      duration: parseFloat(get('duration')) || 0,
+      durationUnit: get('durationUnit') || 'min',
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      calories: parseFloat(get('totalEnergyBurned')) || null,
+      distanceMi: null,
+      distanceKm: null,
+      elevationM: null,
+    });
+  }
+  setStage('workouts', 'done', data.workouts.length);
+  await tick();
+
+  // ─── Distance & elevation ───
+  setStage('distance', 'active');
+  await tick();
+  const workoutBlockRegex = /<Workout\s[^>]*startDate="([^"]*)"[^>]*>([\s\S]*?)(?:<\/Workout>)/g;
+  let blockMatch;
+  let distFound = 0;
+  while ((blockMatch = workoutBlockRegex.exec(xml)) !== null) {
+    const blockStart = new Date(blockMatch[1]);
+    const blockContent = blockMatch[2];
+
+    const workout = data.workouts.find(w => Math.abs(w.startDate - blockStart) < 1000);
+    if (!workout) continue;
+
+    const distMatch = blockContent.match(/type="HKQuantityTypeIdentifierDistanceWalkingRunning"[^>]*sum="([^"]*)"/);
+    if (distMatch) {
+      const distKm = parseFloat(distMatch[1]);
+      const unitMatch = blockContent.match(/type="HKQuantityTypeIdentifierDistanceWalkingRunning"[^>]*unit="([^"]*)"/);
+      const unit = unitMatch ? unitMatch[1] : 'km';
+      if (unit === 'mi') {
+        workout.distanceMi = distKm;
+        workout.distanceKm = distKm * 1.60934;
+      } else {
+        workout.distanceKm = distKm;
+        workout.distanceMi = distKm / 1.60934;
+      }
+      distFound++;
+    }
+
+    const elevMatch = blockContent.match(/type="HKQuantityTypeIdentifierFlightsClimbed"[^>]*sum="([^"]*)"/);
+    if (elevMatch) workout.elevationFlights = parseFloat(elevMatch[1]);
+    const elevMMatch = blockContent.match(/type="HKQuantityTypeIdentifierElevationAscended"[^>]*sum="([^"]*)"/);
+    if (elevMMatch) workout.elevationM = parseFloat(elevMMatch[1]);
+  }
+  setStage('distance', 'done', `${distFound} with GPS`);
+  await tick();
+
+  // ─── VO2max ───
+  setStage('vo2', 'active');
+  await tick();
+  const vo2Regex = /<Record type="HKQuantityTypeIdentifierVO2Max"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  while ((match = vo2Regex.exec(xml)) !== null) {
+    data.vo2max.push({
+      date: new Date(match[1]),
+      value: parseFloat(match[2])
+    });
+  }
+  setStage('vo2', 'done', data.vo2max.length);
+  await tick();
+
+  // ─── Step counts ───
+  setStage('steps', 'active');
+  await tick();
+  const stepRegex = /<Record type="HKQuantityTypeIdentifierStepCount"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  let stepCount = 0;
+  while ((match = stepRegex.exec(xml)) !== null) {
+    data.stepCounts.push({
+      date: new Date(match[1]),
+      count: parseInt(match[2])
+    });
+    stepCount++;
+    if (stepCount % 50000 === 0) {
+      setStage('steps', 'active', stepCount);
+      await tick();
+    }
+  }
+  setStage('steps', 'done', stepCount);
+  await tick();
+
+  // ─── Sort ───
+  setStage('sort', 'active');
+  await tick();
+  data.heartRateSamples.sort((a, b) => a.date - b.date);
+  data.restingHR.sort((a, b) => a.date - b.date);
+  data.workouts.sort((a, b) => a.startDate - b.startDate);
+  data.vo2max.sort((a, b) => a.date - b.date);
+  setStage('sort', 'done');
+  await tick();
+
+  return data;
+}
+
+// ─── Analysis Functions ────────────────────────────────────────
+
+function getHRForWorkout(workout, hrSamples) {
+  return hrSamples.filter(s =>
+    s.date >= workout.startDate && s.date <= workout.endDate
+  );
+}
+
+function analyzeZoneDistribution(hrSamples) {
+  const zones = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  hrSamples.forEach(s => { zones[hrZone(s.bpm)]++; });
+  const total = hrSamples.length || 1;
+  return Object.fromEntries(
+    Object.entries(zones).map(([k, v]) => [k, { count: v, pct: (v / total * 100) }])
+  );
+}
+
+function getWorkoutSummary(workout, hrSamples) {
+  const hrs = getHRForWorkout(workout, hrSamples);
+  if (hrs.length === 0) return null;
+
+  const bpms = hrs.map(h => h.bpm);
+  const avgHR = bpms.reduce((a, b) => a + b, 0) / bpms.length;
+  const maxHR = Math.max(...bpms);
+  const minHR = Math.min(...bpms);
+  const zones = analyzeZoneDistribution(hrs);
+
+  // Dominant zone
+  let dominantZone = 2;
+  let maxPct = 0;
+  for (const [z, d] of Object.entries(zones)) {
+    if (d.pct > maxPct) { maxPct = d.pct; dominantZone = parseInt(z); }
+  }
+
+  const durationMin = workout.duration && workout.durationUnit === 'min'
+    ? workout.duration
+    : (workout.endDate - workout.startDate) / 60000;
+
+  // Distance & pace
+  const distMi = workout.distanceMi || null;
+  const distKm = workout.distanceKm || null;
+
+  // Pace: min per mile
+  let paceMinPerMi = null;
+  let paceStr = null;
+  if (distMi && distMi > 0 && durationMin > 0) {
+    paceMinPerMi = durationMin / distMi;
+    const paceM = Math.floor(paceMinPerMi);
+    const paceS = Math.round((paceMinPerMi - paceM) * 60);
+    paceStr = `${paceM}:${paceS.toString().padStart(2, '0')}`;
+  }
+
+  // Cardiac efficiency: distance per heartbeat (yards per beat, roughly)
+  // More useful: pace at avg HR — lower pace (faster) at same HR = fitter
+  // We store pace and avgHR and compute efficiency as a ratio
+  let cardiacEfficiency = null;
+  if (distMi && distMi > 0 && avgHR > 0 && durationMin > 0) {
+    // Meters per beat: total distance / total heartbeats
+    const totalBeats = avgHR * durationMin; // beats per min * min
+    const totalMeters = (distKm || 0) * 1000;
+    cardiacEfficiency = totalMeters / totalBeats; // meters per beat
+  }
+
+  return {
+    ...workout,
+    avgHR: Math.round(avgHR),
+    maxHR: Math.round(maxHR),
+    minHR: Math.round(minHR),
+    zones,
+    dominantZone,
+    durationMin: Math.round(durationMin),
+    hrSamples: hrs,
+    distMi,
+    distKm,
+    paceMinPerMi,
+    paceStr,
+    cardiacEfficiency,
+  };
+}
+
+// ─── Render Dashboard ──────────────────────────────────────────
+function applyDateFilter(items, getDate) {
+  return items.filter(item => {
+    const d = getDate(item);
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
+    return true;
+  });
+}
+
+function setDatePreset(months) {
+  if (months === 0) {
+    dateFrom = null;
+    dateTo = null;
+  } else {
+    const now = new Date();
+    dateFrom = new Date(now);
+    dateFrom.setMonth(dateFrom.getMonth() - months);
+    dateTo = null;
+  }
+  // Update input fields
+  const fromEl = document.getElementById('dateFrom');
+  const toEl = document.getElementById('dateTo');
+  if (fromEl) fromEl.value = dateFrom ? dateFrom.toISOString().split('T')[0] : '';
+  if (toEl) toEl.value = '';
+  renderDashboard();
+}
+
+function onDateInputChange() {
+  const fromVal = document.getElementById('dateFrom').value;
+  const toVal = document.getElementById('dateTo').value;
+  dateFrom = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  dateTo = toVal ? new Date(toVal + 'T23:59:59') : null;
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const container = document.getElementById('dashboard');
+  container.style.display = 'block';
+
+  // Apply date filter to workouts
+  const allFilteredWorkouts = applyDateFilter(
+    getWorkoutsForTab(healthData, activeTab),
+    w => w.startDate
+  );
+  const summaries = allFilteredWorkouts
+    .map(w => getWorkoutSummary(w, healthData.heartRateSamples))
+    .filter(Boolean);
+
+  const rhr = applyDateFilter(healthData.restingHR, r => r.date);
+  const vo2 = applyDateFilter(healthData.vo2max, v => v.date);
+
+  // Count per tab (with date filter)
+  const tabCounts = {};
+  for (const tab of Object.keys(ACTIVITY_TABS)) {
+    tabCounts[tab] = applyDateFilter(
+      getWorkoutsForTab(healthData, tab),
+      w => w.startDate
+    ).length;
+  }
+
+  // Aggregate zone distribution
+  const allSessionHR = summaries.flatMap(s => s.hrSamples || []);
+  const overallZones = analyzeZoneDistribution(allSessionHR);
+
+  // Stats
+  const totalSessions = summaries.length;
+  const avgDuration = totalSessions > 0
+    ? Math.round(summaries.reduce((a, s) => a + s.durationMin, 0) / totalSessions) : 0;
+  const avgHR = totalSessions > 0
+    ? Math.round(summaries.reduce((a, s) => a + s.avgHR, 0) / totalSessions) : 0;
+  const latestRHR = rhr.length > 0 ? rhr[rhr.length - 1].bpm : '—';
+  const earliestRHR = rhr.length > 5 ? rhr[0].bpm : null;
+  const rhrDelta = earliestRHR ? Math.round(latestRHR - earliestRHR) : null;
+
+  let html = '';
+
+  // ─── Activity Tabs ───
+  html += `<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:start;margin-bottom:20px;">
+    <div class="tabs" style="margin-bottom:0;">`;
+  for (const [tab, info] of Object.entries(ACTIVITY_TABS)) {
+    const count = tabCounts[tab];
+    const active = tab === activeTab ? 'active' : '';
+    html += `<button class="tab ${active}" onclick="activeTab='${tab}';renderDashboard()">
+      ${info.label}<span style="opacity:0.5;margin-left:6px;font-size:10px">${count}</span>
+    </button>`;
+  }
+  html += `</div></div>`;
+
+  // ─── Date Filter ───
+  const fromVal = dateFrom ? dateFrom.toISOString().split('T')[0] : '';
+  const toVal = dateTo ? dateTo.toISOString().split('T')[0] : '';
+  const noPreset = !dateFrom && !dateTo;
+  html += `<div class="date-filter">
+    <label>From</label>
+    <input type="date" id="dateFrom" value="${fromVal}" onchange="onDateInputChange()" />
+    <label>To</label>
+    <input type="date" id="dateTo" value="${toVal}" onchange="onDateInputChange()" />
+    <div class="date-presets">
+      <button class="preset-btn ${noPreset ? 'active' : ''}" onclick="setDatePreset(0)">All</button>
+      <button class="preset-btn" onclick="setDatePreset(1)">1M</button>
+      <button class="preset-btn" onclick="setDatePreset(3)">3M</button>
+      <button class="preset-btn" onclick="setDatePreset(6)">6M</button>
+      <button class="preset-btn" onclick="setDatePreset(12)">1Y</button>
+    </div>
+  </div>`;
+
+  if (totalSessions === 0) {
+    html += `<div class="empty-state">
+      <p>No ${ACTIVITY_TABS[activeTab].label.toLowerCase()} sessions found in this date range.</p>
+      <p style="margin-top:8px;font-size:11px;">Try adjusting the date filter or switching tabs.</p>
+    </div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  // ─── Overview Stats ───
+  const withDist = summaries.filter(s => s.distMi && s.distMi > 0);
+  const totalDistMi = withDist.reduce((a, s) => a + s.distMi, 0);
+  const avgPace = withDist.length > 0
+    ? withDist.reduce((a, s) => a + (s.paceMinPerMi || 0), 0) / withDist.length : null;
+  const avgPaceStr = avgPace ? `${Math.floor(avgPace)}:${Math.round((avgPace - Math.floor(avgPace)) * 60).toString().padStart(2, '0')}` : '—';
+
+  html += `<div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Sessions</div>
+      <div class="value">${totalSessions}</div>
+      <div class="unit">${ACTIVITY_TABS[activeTab].label.toLowerCase()}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Duration</div>
+      <div class="value">${avgDuration}</div>
+      <div class="unit">minutes</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Heart Rate</div>
+      <div class="value">${avgHR}</div>
+      <div class="unit">bpm across sessions</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Distance</div>
+      <div class="value">${totalDistMi > 0 ? totalDistMi.toFixed(1) : '—'}</div>
+      <div class="unit">${totalDistMi > 0 ? 'miles' : 'no GPS data'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Pace</div>
+      <div class="value">${avgPaceStr}</div>
+      <div class="unit">${avgPace ? 'min/mile' : ''}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Resting HR</div>
+      <div class="value">${latestRHR}</div>
+      <div class="unit">${rhrDelta !== null
+        ? `<span class="delta ${rhrDelta <= 0 ? 'good' : 'neutral'}" style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;background:${rhrDelta <= 0 ? 'rgba(45,155,110,0.15)' : 'rgba(212,168,67,0.15)'};color:${rhrDelta <= 0 ? 'var(--z2)' : 'var(--z3)'}">${rhrDelta <= 0 ? '' : '+'}${rhrDelta} bpm (period)</span>`
+        : 'bpm latest'}</div>
+    </div>
+  </div>`;
+
+  // ─── Zone Distribution ───
+  html += renderZoneBar(overallZones, `${totalSessions} sessions combined`);
+
+  // ─── Resting HR Trend ───
+  if (rhr.length > 1 && activeTab === 'all') {
+    html += `<div class="section">
+      <div class="section-header">
+        <h2>Resting Heart Rate</h2>
+        <span class="meta">${rhr.length} data points</span>
+      </div>
+      <div class="chart-container"><canvas id="rhrChart"></canvas></div>
+    </div>`;
+  }
+
+  // ─── VO2max (All tab only) ───
+  if (vo2.length > 1 && activeTab === 'all') {
+    html += `<div class="section">
+      <div class="section-header">
+        <h2>VO₂max Estimate</h2>
+        <span class="meta">${vo2.length} readings</span>
+      </div>
+      <div class="chart-container"><canvas id="vo2Chart"></canvas></div>
+    </div>`;
+  }
+
+  // ─── Charts: SEPARATED by activity ───
+  if (activeTab === 'all') {
+    // On "All" tab, render separate chart groups per activity
+    const activityTypes = ['stairs', 'run', 'walk'];
+    for (const act of activityTypes) {
+      const actSummaries = summaries.filter(s => matchesTab(s.type, act));
+      if (actSummaries.length === 0) continue;
+
+      const actLabel = ACTIVITY_TABS[act].label;
+      const actWithPace = actSummaries.filter(s => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30);
+      const actWithEff = actSummaries.filter(s => s.cardiacEfficiency && s.cardiacEfficiency > 0);
+
+      html += `<div class="section">
+        <div class="section-header">
+          <h2>${actLabel}</h2>
+          <span class="meta">${actSummaries.length} sessions</span>
+        </div>`;
+
+      // HR chart
+      if (actSummaries.length > 1) {
+        html += `<div class="chart-container" style="margin-bottom:12px;">
+          <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:10px;">Avg HR per session</p>
+          <canvas id="sessionHRChart_${act}"></canvas>
+        </div>`;
+      }
+
+      // Pace chart (only if distance data exists)
+      if (actWithPace.length > 1) {
+        html += `<div class="chart-container" style="margin-bottom:12px;">
+          <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:10px;">Pace trend — min/mile</p>
+          <canvas id="paceChart_${act}"></canvas>
+        </div>`;
+      }
+
+      // Efficiency chart
+      if (actWithEff.length > 2) {
+        html += `<div class="chart-container" style="margin-bottom:12px;">
+          <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:10px;">Cardiac efficiency — meters per heartbeat</p>
+          <canvas id="efficiencyChart_${act}"></canvas>
+        </div>`;
+      }
+
+      // Pace at HR scatter
+      if (actWithPace.length > 2) {
+        html += `<div class="chart-container">
+          <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:10px;">Pace at heart rate — down+left = fitter</p>
+          <canvas id="paceHRScatter_${act}"></canvas>
+        </div>`;
+      }
+
+      html += `</div>`;
+    }
+  } else {
+    // Single activity tab — show charts directly
+    if (summaries.length > 1) {
+      html += `<div class="section">
+        <div class="section-header">
+          <h2>Avg HR Per Session</h2>
+          <span class="meta">Tracking cardiac efficiency over time</span>
+        </div>
+        <div class="chart-container"><canvas id="sessionHRChart_${activeTab}"></canvas></div>
+      </div>`;
+    }
+
+    const withPace = summaries.filter(s => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30);
+    if (withPace.length > 1) {
+      html += `<div class="section">
+        <div class="section-header">
+          <h2>Pace Trend</h2>
+          <span class="meta">Min/mile — lower is faster</span>
+        </div>
+        <div class="chart-container"><canvas id="paceChart_${activeTab}"></canvas></div>
+      </div>`;
+    }
+
+    const withEff = summaries.filter(s => s.cardiacEfficiency && s.cardiacEfficiency > 0);
+    if (withEff.length > 2) {
+      html += `<div class="section">
+        <div class="section-header">
+          <h2>Cardiac Efficiency</h2>
+          <span class="meta">Meters per heartbeat — higher = fitter</span>
+        </div>
+        <div class="chart-container"><canvas id="efficiencyChart_${activeTab}"></canvas></div>
+      </div>`;
+    }
+
+    if (withPace.length > 2) {
+      html += `<div class="section">
+        <div class="section-header">
+          <h2>Pace at Heart Rate</h2>
+          <span class="meta">Each dot is a session — moving down+left = getting fitter</span>
+        </div>
+        <div class="chart-container"><canvas id="paceHRScatter_${activeTab}"></canvas></div>
+      </div>`;
+    }
+  }
+
+  // ─── Workout Log ───
+  const showTypeCol = activeTab === 'all';
+  const anyDist = summaries.some(s => s.distMi && s.distMi > 0);
+  html += `<div class="section">
+    <div class="section-header">
+      <h2>Session Log</h2>
+      <span class="meta">${summaries.length} sessions</span>
+    </div>
+    <div class="chart-container" style="overflow-x:auto;">
+      <table class="workout-table">
+        <thead><tr>
+          <th>Date</th>
+          ${showTypeCol ? '<th>Type</th>' : ''}
+          <th>Duration</th>
+          ${anyDist ? '<th>Distance</th><th>Pace</th>' : ''}
+          <th>Avg HR</th>
+          <th>Max HR</th>
+          <th>Zone</th>
+          <th>Z2 %</th>
+        </tr></thead>
+        <tbody>`;
+
+  const recentSummaries = summaries.slice(-50).reverse();
+  for (const s of recentSummaries) {
+    const dateStr = s.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const zBadge = s.dominantZone <= 2 ? 'badge-z2' : s.dominantZone === 3 ? 'badge-z3' : s.dominantZone >= 4 ? 'badge-z4' : 'badge-mixed';
+    const z2pct = Math.round(s.zones[2]?.pct || 0);
+    const typeLabel = friendlyType(s.type);
+    const distStr = s.distMi ? s.distMi.toFixed(2) + ' mi' : '—';
+    const paceStr = s.paceStr || '—';
+
+    html += `<tr>
+      <td>${dateStr}</td>
+      ${showTypeCol ? `<td><span style="opacity:0.6">${typeLabel}</span></td>` : ''}
+      <td>${s.durationMin} min</td>
+      ${anyDist ? `<td>${distStr}</td><td>${paceStr}</td>` : ''}
+      <td>${s.avgHR} bpm</td>
+      <td>${s.maxHR} bpm</td>
+      <td><span class="badge ${zBadge}">Z${s.dominantZone}</span></td>
+      <td>${z2pct}%</td>
+    </tr>`;
+  }
+
+  html += `</tbody></table></div></div>`;
+
+  // ─── Data summary ───
+  const stairCount = tabCounts['stairs'];
+  const runCount = tabCounts['run'];
+  const walkCount = tabCounts['walk'];
+
+  html += `<div class="section">
+    <div class="section-header">
+      <h2>Data Summary</h2>
+    </div>
+    <div class="chart-container">
+      <p style="color:var(--text-dim);font-size:12px;line-height:1.8;">
+        Heart rate samples: <strong style="color:var(--text)">${healthData.heartRateSamples.length.toLocaleString()}</strong><br>
+        Resting HR readings: <strong style="color:var(--text)">${healthData.restingHR.length.toLocaleString()}</strong><br>
+        Workouts in range: <strong style="color:var(--text)">${totalSessions}</strong><br>
+        Stair climber: <strong style="color:var(--text)">${stairCount}</strong> · Running: <strong style="color:var(--text)">${runCount}</strong> · Walking: <strong style="color:var(--text)">${walkCount}</strong>
+      </p>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+
+  // ─── Render Charts ───
+  if (activeTab === 'all') {
+    renderRHRChart(rhr);
+    renderVO2Chart(vo2);
+
+    // Per-activity charts
+    for (const act of ['stairs', 'run', 'walk']) {
+      const actSummaries = summaries.filter(s => matchesTab(s.type, act));
+      if (actSummaries.length > 1) renderSessionHRChart(actSummaries, `sessionHRChart_${act}`);
+      renderPaceChart(actSummaries, `paceChart_${act}`);
+      renderEfficiencyChart(actSummaries, `efficiencyChart_${act}`);
+      renderPaceHRScatter(actSummaries, `paceHRScatter_${act}`);
+    }
+  } else {
+    renderSessionHRChart(summaries, `sessionHRChart_${activeTab}`);
+    renderPaceChart(summaries, `paceChart_${activeTab}`);
+    renderEfficiencyChart(summaries, `efficiencyChart_${activeTab}`);
+    renderPaceHRScatter(summaries, `paceHRScatter_${activeTab}`);
+  }
+}
+
+function renderZoneBar(zones, meta) {
+  let html = `<div class="section">
+    <div class="section-header">
+      <h2>Zone Distribution</h2>
+      <span class="meta">${meta}</span>
+    </div>
+    <div class="chart-container">
+      <div class="zone-bar-container">
+        <div class="zone-bar">`;
+  for (let z = 1; z <= 5; z++) {
+    const pct = zones[z]?.pct || 0;
+    if (pct > 0) {
+      html += `<div style="flex:${pct};background:${ZONE_COLORS[z]}">${pct > 5 ? Math.round(pct) + '%' : ''}</div>`;
+    }
+  }
+  html += `</div><div class="zone-legend">`;
+  for (let z = 1; z <= 5; z++) {
+    html += `<span><span class="dot" style="background:${ZONE_COLORS[z]}"></span>${ZONE_NAMES[z]} — ${Math.round(zones[z]?.pct || 0)}%</span>`;
+  }
+  html += `</div></div></div></div>`;
+  return html;
+}
+
+function renderRHRChart(rhr) {
+  const canvas = document.getElementById('rhrChart');
+  if (!canvas || rhr.length < 2) return;
+
+  // Downsample if needed
+  const maxPoints = 90;
+  let data = rhr;
+  if (rhr.length > maxPoints) {
+    const step = Math.ceil(rhr.length / maxPoints);
+    data = rhr.filter((_, i) => i % step === 0);
+  }
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      datasets: [{
+        label: 'Resting HR',
+        data: data.map(d => d.bpm),
+        borderColor: '#2d9b6e',
+        backgroundColor: 'rgba(45, 155, 110, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 1.5,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c22',
+          borderColor: '#2a2a34',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono' },
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' }
+        },
+        y: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' }
+        }
+      }
+    }
+  });
+}
+
+function renderSessionHRChart(summaries, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || summaries.length < 2) return;
+
+  const recent = summaries.slice(-30);
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: recent.map(s => s.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      datasets: [{
+        label: 'Avg HR',
+        data: recent.map(s => s.avgHR),
+        backgroundColor: recent.map(s => {
+          const z = hrZone(s.avgHR);
+          return ZONE_COLORS[z] + '99';
+        }),
+        borderColor: recent.map(s => ZONE_COLORS[hrZone(s.avgHR)]),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c22',
+          borderColor: '#2a2a34',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono' },
+          callbacks: {
+            afterLabel: (ctx) => {
+              const s = recent[ctx.dataIndex];
+              return `Duration: ${s.durationMin}min | Max: ${s.maxHR}bpm`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 10 },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' },
+          suggestedMin: 80,
+        }
+      }
+    }
+  });
+}
+
+function renderPaceChart(summaries, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const withPace = summaries.filter(s => s.paceMinPerMi && s.paceMinPerMi > 0 && s.paceMinPerMi < 30).slice(-30);
+  if (withPace.length < 2) return;
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: withPace.map(s => s.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      datasets: [{
+        label: 'Pace (min/mi)',
+        data: withPace.map(s => s.paceMinPerMi),
+        borderColor: '#d4a843',
+        backgroundColor: 'rgba(212, 168, 67, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: withPace.map(s => ZONE_COLORS[hrZone(s.avgHR)]),
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c22',
+          borderColor: '#2a2a34',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono' },
+          callbacks: {
+            label: (ctx) => {
+              const s = withPace[ctx.dataIndex];
+              return `${s.paceStr} /mi @ ${s.avgHR} bpm avg`;
+            },
+            afterLabel: (ctx) => {
+              const s = withPace[ctx.dataIndex];
+              return s.distMi ? `${s.distMi.toFixed(2)} mi in ${s.durationMin} min` : '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' }
+        },
+        y: {
+          reverse: true,
+          ticks: {
+            color: '#7a7880',
+            font: { family: 'DM Mono', size: 10 },
+            callback: (v) => { const m = Math.floor(v); const s = Math.round((v - m) * 60); return `${m}:${s.toString().padStart(2, '0')}`; }
+          },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' },
+          title: { display: true, text: 'min/mile (lower = faster)', color: '#7a7880', font: { family: 'DM Mono', size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+function renderEfficiencyChart(summaries, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const withEff = summaries.filter(s => s.cardiacEfficiency && s.cardiacEfficiency > 0).slice(-30);
+  if (withEff.length < 2) return;
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: withEff.map(s => s.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      datasets: [{
+        label: 'Meters/Beat',
+        data: withEff.map(s => parseFloat(s.cardiacEfficiency.toFixed(3))),
+        borderColor: '#2d9b6e',
+        backgroundColor: 'rgba(45, 155, 110, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c22',
+          borderColor: '#2a2a34',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono' },
+          callbacks: {
+            label: (ctx) => {
+              const s = withEff[ctx.dataIndex];
+              return `${s.cardiacEfficiency.toFixed(2)} m/beat @ ${s.avgHR} bpm`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' }
+        },
+        y: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' },
+          title: { display: true, text: 'meters per heartbeat', color: '#7a7880', font: { family: 'DM Mono', size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+function renderPaceHRScatter(summaries, canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const data = summaries.filter(s => s.paceMinPerMi && s.avgHR && s.paceMinPerMi < 30);
+  if (data.length < 3) return;
+
+  // Color by recency — older = dimmer, newer = brighter
+  const oldest = data[0].startDate.getTime();
+  const newest = data[data.length - 1].startDate.getTime();
+  const range = newest - oldest || 1;
+
+  new Chart(canvas, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Session',
+        data: data.map(s => ({ x: s.avgHR, y: s.paceMinPerMi })),
+        backgroundColor: data.map(s => {
+          const age = (s.startDate.getTime() - oldest) / range; // 0=old, 1=new
+          const alpha = 0.3 + age * 0.7;
+          return `rgba(45, 155, 110, ${alpha})`;
+        }),
+        pointRadius: 6,
+        pointHoverRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c22',
+          borderColor: '#2a2a34',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono' },
+          callbacks: {
+            title: (items) => {
+              const s = data[items[0].dataIndex];
+              return s.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            },
+            label: (ctx) => {
+              const s = data[ctx.dataIndex];
+              return `${s.paceStr} /mi @ ${s.avgHR} bpm | ${s.distMi?.toFixed(2) || '?'} mi`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' },
+          title: { display: true, text: 'Avg Heart Rate (bpm)', color: '#7a7880', font: { family: 'DM Mono', size: 10 } }
+        },
+        y: {
+          reverse: true,
+          ticks: {
+            color: '#7a7880',
+            font: { family: 'DM Mono', size: 10 },
+            callback: (v) => { const m = Math.floor(v); const s = Math.round((v - m) * 60); return `${m}:${s.toString().padStart(2, '0')}`; }
+          },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' },
+          title: { display: true, text: 'Pace (min/mi) — lower = faster', color: '#7a7880', font: { family: 'DM Mono', size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+function renderVO2Chart(vo2) {
+  const canvas = document.getElementById('vo2Chart');
+  if (!canvas || vo2.length < 2) return;
+
+  const maxPoints = 60;
+  let data = vo2;
+  if (vo2.length > maxPoints) {
+    const step = Math.ceil(vo2.length / maxPoints);
+    data = vo2.filter((_, i) => i % step === 0);
+  }
+
+  new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+      datasets: [{
+        label: 'VO₂max',
+        data: data.map(d => d.value),
+        borderColor: '#d45a3a',
+        backgroundColor: 'rgba(212, 90, 58, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 5,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1c1c22',
+          borderColor: '#2a2a34',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono' },
+          callbacks: {
+            label: (ctx) => `VO₂max: ${data[ctx.dataIndex].value.toFixed(1)} mL/kg/min`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' }
+        },
+        y: {
+          ticks: { color: '#7a7880', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(42, 42, 52, 0.5)' },
+          title: { display: true, text: 'mL/kg/min', color: '#7a7880', font: { family: 'DM Mono', size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+// ─── Zone Settings Reactivity ──────────────────────────────────
+document.querySelectorAll('.zone-input input').forEach(input => {
+  input.addEventListener('change', () => {
+    if (healthData) renderDashboard();
+  });
+});
+</script>
+
+</body>
+</html>
