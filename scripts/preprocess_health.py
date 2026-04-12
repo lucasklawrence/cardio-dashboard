@@ -318,7 +318,7 @@ def parse_health_xml(xml_text):
         energy_by_day[day_key] = energy_by_day.get(day_key, 0) + kcal
         count += 1
     for day_key, total in sorted(energy_by_day.items()):
-        data['activeEnergy'].append({'d': day_key, 'k': round(total)})
+        data['activeEnergy'].append({'d': day_key, 'k': int(total + 0.5)})
     log(f" {len(energy_by_day):,} days ({count:,} records)")
 
     return data

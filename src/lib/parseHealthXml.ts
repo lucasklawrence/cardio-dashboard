@@ -217,13 +217,17 @@ export async function parseHealthXml(
   onProgress('steps', 'active');
   await tick();
   const stepRegex =
-    /<Record type="HKQuantityTypeIdentifierStepCount"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+    /<Record\b[^>]*type="HKQuantityTypeIdentifierStepCount"[^>]*>/g;
   const stepsByDay = new Map<string, number>();
   let stepCount = 0;
   while ((match = stepRegex.exec(xml)) !== null) {
-    const date = new Date(match[1]);
-    const count = parseInt(match[2], 10);
-    if (Number.isNaN(date.getTime()) || !Number.isFinite(count)) continue;
+    const record = match[0];
+    const dateM = record.match(/\bstartDate="([^"]*)"/);
+    const valueM = record.match(/\bvalue="([^"]*)"/);
+    if (!dateM || !valueM) continue;
+    const date = new Date(dateM[1]);
+    const count = Number(valueM[1]);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(count) || count < 0) continue;
     const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     stepsByDay.set(dayKey, (stepsByDay.get(dayKey) || 0) + count);
     stepCount++;

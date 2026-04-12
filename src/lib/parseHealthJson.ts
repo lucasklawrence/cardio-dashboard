@@ -60,6 +60,11 @@ function byDate(a: { date: Date }, b: { date: Date }) {
   return a.date.getTime() - b.date.getTime();
 }
 
+/** Append T00:00:00 to YYYY-MM-DD strings so they parse as local midnight, not UTC. */
+function localDate(d: string): Date {
+  return d.includes('T') ? new Date(d) : new Date(d + 'T00:00:00');
+}
+
 export function hydrateHealthJson(raw: CompactHealthData): HealthData {
   const heartRateSamples = (raw.heartRateSamples || []).map((s) => ({
     date: new Date(s.d),
@@ -98,15 +103,15 @@ export function hydrateHealthJson(raw: CompactHealthData): HealthData {
     lbs: s.lb,
   }));
   const stepCounts = (raw.stepCounts || []).map((s) => ({
-    date: new Date(s.d),
+    date: localDate(s.d),
     count: s.c,
   }));
   const sleep = (raw.sleep || []).map((s) => ({
-    date: new Date(s.d),
+    date: localDate(s.d),
     hours: s.h,
   }));
   const activeEnergy = (raw.activeEnergy || []).map((s) => ({
-    date: new Date(s.d),
+    date: localDate(s.d),
     kcal: s.k,
   }));
 
