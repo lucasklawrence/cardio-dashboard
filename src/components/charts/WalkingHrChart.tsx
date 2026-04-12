@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { WalkingHrSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { formatShortDate } from '../../lib/format';
+import { aggregateTimeSeries, type AggregationMode } from '../../lib/aggregateTimeSeries';
+import { AggregationToggle } from '../AggregationToggle';
 
 interface WalkingHrChartProps {
   data: WalkingHrSample[];
@@ -11,10 +13,14 @@ interface WalkingHrChartProps {
 const MAX_POINTS = 90;
 
 export function WalkingHrChart({ data }: WalkingHrChartProps) {
+  const [aggMode, setAggMode] = useState<AggregationMode>('day');
+
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (data.length < 2) return null;
 
-    let series = data;
+    const raw = data.map((d) => ({ date: d.date, value: d.bpm }));
+    let series = aggregateTimeSeries(raw, aggMode);
+
     if (series.length > MAX_POINTS) {
       const step = Math.ceil(series.length / MAX_POINTS);
       series = series.filter((_, i) => i % step === 0);
@@ -27,7 +33,7 @@ export function WalkingHrChart({ data }: WalkingHrChartProps) {
         datasets: [
           {
             label: 'Walking HR',
-            data: series.map((d) => d.bpm),
+            data: series.map((d) => d.value),
             borderColor: '#06b6d4',
             backgroundColor: 'rgba(6, 182, 212, 0.1)',
             fill: true,
@@ -49,6 +55,9 @@ export function WalkingHrChart({ data }: WalkingHrChartProps) {
             borderWidth: 1,
             titleFont: { family: 'DM Mono' },
             bodyFont: { family: 'DM Mono' },
+            callbacks: {
+              label: (ctx) => `Walking HR: ${series[ctx.dataIndex].value.toFixed(0)} bpm`,
+            },
           },
         },
         scales: {
@@ -73,7 +82,7 @@ export function WalkingHrChart({ data }: WalkingHrChartProps) {
         },
       },
     };
-  }, [data]);
+  }, [data, aggMode]);
 
   const ref = useChart(config);
   if (!config) return null;
@@ -82,7 +91,10 @@ export function WalkingHrChart({ data }: WalkingHrChartProps) {
     <div className="section">
       <div className="section-header">
         <h2>Walking Heart Rate</h2>
-        <span className="meta">{data.length} daily averages</span>
+        <div className="section-header-controls">
+          <AggregationToggle mode={aggMode} onChange={setAggMode} />
+          <span className="meta">{data.length} daily averages</span>
+        </div>
       </div>
       <div className="chart-container">
         <canvas ref={ref} />

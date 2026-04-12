@@ -1,8 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChartConfiguration } from 'chart.js';
 import type { HrvSample } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { formatShortDate } from '../../lib/format';
+import { aggregateTimeSeries, type AggregationMode } from '../../lib/aggregateTimeSeries';
+import { useGoal } from '../../lib/goals';
+import { goalAnnotation } from '../../lib/goalAnnotation';
+import { AggregationToggle } from '../AggregationToggle';
+import { GoalInput } from '../GoalInput';
 
 interface HrvChartProps {
   data: HrvSample[];
@@ -11,10 +16,15 @@ interface HrvChartProps {
 const MAX_POINTS = 90;
 
 export function HrvChart({ data }: HrvChartProps) {
+  const [aggMode, setAggMode] = useState<AggregationMode>('day');
+  const [goal, setGoal] = useGoal('hrv');
+
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     if (data.length < 2) return null;
 
-    let series = data;
+    const raw = data.map((d) => ({ date: d.date, value: d.value }));
+    let series = aggregateTimeSeries(raw, aggMode);
+
     if (series.length > MAX_POINTS) {
       const step = Math.ceil(series.length / MAX_POINTS);
       series = series.filter((_, i) => i % step === 0);
@@ -43,6 +53,7 @@ export function HrvChart({ data }: HrvChartProps) {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
+          annotation: goalAnnotation(goal),
           tooltip: {
             backgroundColor: '#1c1c22',
             borderColor: '#2a2a34',
@@ -76,7 +87,7 @@ export function HrvChart({ data }: HrvChartProps) {
         },
       },
     };
-  }, [data]);
+  }, [data, aggMode, goal]);
 
   const ref = useChart(config);
   if (!config) return null;
@@ -85,7 +96,11 @@ export function HrvChart({ data }: HrvChartProps) {
     <div className="section">
       <div className="section-header">
         <h2>Heart Rate Variability</h2>
-        <span className="meta">{data.length} readings</span>
+        <div className="section-header-controls">
+          <AggregationToggle mode={aggMode} onChange={setAggMode} />
+          <GoalInput value={goal} onChange={setGoal} unit="ms" />
+          <span className="meta">{data.length} readings</span>
+        </div>
       </div>
       <div className="chart-container">
         <canvas ref={ref} />

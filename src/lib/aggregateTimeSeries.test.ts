@@ -1,0 +1,86 @@
+import { describe, expect, it } from 'vitest';
+import { aggregateTimeSeries } from './aggregateTimeSeries';
+
+function pt(dateStr: string, value: number) {
+  return { date: new Date(dateStr + 'T00:00:00'), value };
+}
+
+describe('aggregateTimeSeries', () => {
+  it('returns data unchanged in day mode', () => {
+    const data = [pt('2026-01-05', 10), pt('2026-01-06', 20)];
+    expect(aggregateTimeSeries(data, 'day')).toBe(data);
+  });
+
+  it('returns empty array unchanged', () => {
+    expect(aggregateTimeSeries([], 'week')).toEqual([]);
+    expect(aggregateTimeSeries([], 'month')).toEqual([]);
+  });
+
+  describe('week aggregation', () => {
+    it('groups points in the same ISO week', () => {
+      // 2026-01-05 is a Monday, 2026-01-09 is Friday — same week
+      const data = [pt('2026-01-05', 10), pt('2026-01-07', 20), pt('2026-01-09', 30)];
+      const result = aggregateTimeSeries(data, 'week');
+      expect(result).toHaveLength(1);
+      expect(result[0].value).toBeCloseTo(20);
+      // Date should be the Monday
+      expect(result[0].date.getDay()).toBe(1);
+    });
+
+    it('separates points in different weeks', () => {
+      // Mon Jan 5 and Mon Jan 12 are different weeks
+      const data = [pt('2026-01-05', 10), pt('2026-01-12', 30)];
+      const result = aggregateTimeSeries(data, 'week');
+      expect(result).toHaveLength(2);
+      expect(result[0].value).toBeCloseTo(10);
+      expect(result[1].value).toBeCloseTo(30);
+    });
+
+    it('handles Sunday correctly (groups with previous Monday)', () => {
+      // 2026-01-11 is a Sunday, should group with Mon Jan 5 week
+      const data = [pt('2026-01-05', 10), pt('2026-01-11', 20)];
+      const result = aggregateTimeSeries(data, 'week');
+      expect(result).toHaveLength(1);
+      expect(result[0].value).toBeCloseTo(15);
+    });
+  });
+
+  describe('month aggregation', () => {
+    it('groups points in the same month', () => {
+      const data = [pt('2026-03-01', 10), pt('2026-03-15', 20), pt('2026-03-28', 30)];
+      const result = aggregateTimeSeries(data, 'month');
+      expect(result).toHaveLength(1);
+      expect(result[0].value).toBeCloseTo(20);
+      // Date should be the 1st of the month
+      expect(result[0].date.getDate()).toBe(1);
+    });
+
+    it('separates points in different months', () => {
+      const data = [pt('2026-01-15', 10), pt('2026-02-15', 20), pt('2026-03-15', 30)];
+      const result = aggregateTimeSeries(data, 'month');
+      expect(result).toHaveLength(3);
+      expect(result[0].value).toBeCloseTo(10);
+      expect(result[1].value).toBeCloseTo(20);
+      expect(result[2].value).toBeCloseTo(30);
+    });
+
+    it('returns sorted results', () => {
+      const data = [pt('2026-03-10', 30), pt('2026-01-10', 10)];
+      const result = aggregateTimeSeries(data, 'month');
+      expect(result).toHaveLength(2);
+      expect(result[0].date.getMonth()).toBe(0); // January
+      expect(result[1].date.getMonth()).toBe(2); // March
+    });
+  });
+
+  it('handles single data point', () => {
+    const data = [pt('2026-06-15', 42)];
+    const weekResult = aggregateTimeSeries(data, 'week');
+    expect(weekResult).toHaveLength(1);
+    expect(weekResult[0].value).toBeCloseTo(42);
+
+    const monthResult = aggregateTimeSeries(data, 'month');
+    expect(monthResult).toHaveLength(1);
+    expect(monthResult[0].value).toBeCloseTo(42);
+  });
+});
