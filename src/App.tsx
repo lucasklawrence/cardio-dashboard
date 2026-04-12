@@ -12,8 +12,9 @@ function AppShell() {
   return (
     <div className="app">
       <Header />
-      {!healthData && !loading && !error && <UploadZone onFile={load} />}
-      {(loading || error) && <LoadingProgress stages={stages} error={error} />}
+      {!healthData && !loading && <UploadZone onFile={load} />}
+      {loading && <LoadingProgress stages={stages} error={null} />}
+      {error && !loading && <LoadingProgress stages={stages} error={error} />}
       {healthData && !loading && <Dashboard />}
     </div>
   );
