@@ -28,6 +28,9 @@ def parse_health_xml(xml_text):
         'restingHR': [],
         'workouts': [],
         'vo2max': [],
+        'hrv': [],
+        'walkingHR': [],
+        'bodyMass': [],
     }
 
     total_len = len(xml_text)
@@ -168,6 +171,72 @@ def parse_health_xml(xml_text):
         count += 1
     log(f" {count:,} found")
 
+    # ─── HRV (SDNN) ───
+    log("Parsing HRV (SDNN)...", end='')
+    hrv_regex = re.compile(
+        r'<Record\b[^>]*type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*>'
+    )
+    count = 0
+    for m in hrv_regex.finditer(xml_text):
+        record = m.group(0)
+        date_m = re.search(r'\bstartDate="([^"]*)"', record)
+        val_m = re.search(r'\bvalue="([^"]*)"', record)
+        if not date_m or not val_m:
+            continue
+        data['hrv'].append({
+            'd': date_m.group(1),
+            'v': round(float(val_m.group(1)), 2)
+        })
+        count += 1
+    log(f" {count:,} found")
+
+    # ─── Walking heart rate average ───
+    log("Parsing walking heart rate...", end='')
+    whr_regex = re.compile(
+        r'<Record\b[^>]*type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*>'
+    )
+    count = 0
+    for m in whr_regex.finditer(xml_text):
+        record = m.group(0)
+        date_m = re.search(r'\bstartDate="([^"]*)"', record)
+        val_m = re.search(r'\bvalue="([^"]*)"', record)
+        if not date_m or not val_m:
+            continue
+        data['walkingHR'].append({
+            'd': date_m.group(1),
+            'b': round(float(val_m.group(1)), 1)
+        })
+        count += 1
+    log(f" {count:,} found")
+
+    # ─── Body mass ───
+    log("Parsing body mass...", end='')
+    mass_regex = re.compile(
+        r'<Record type="HKQuantityTypeIdentifierBodyMass"\s([^>]+)'
+    )
+    count = 0
+    for m in mass_regex.finditer(xml_text):
+        attrs = m.group(1)
+        date_m = re.search(r'startDate="([^"]*)"', attrs)
+        val_m = re.search(r'value="([^"]*)"', attrs)
+        unit_m = re.search(r'unit="([^"]*)"', attrs)
+        if not date_m or not val_m:
+            continue
+        val = float(val_m.group(1))
+        unit = (unit_m.group(1).strip().lower() if unit_m else 'lb')
+        if unit == 'lb':
+            lbs = val
+        elif unit == 'kg':
+            lbs = val * 2.20462
+        else:
+            continue
+        data['bodyMass'].append({
+            'd': date_m.group(1),
+            'lb': round(lbs, 1)
+        })
+        count += 1
+    log(f" {count:,} found")
+
     return data
 
 
@@ -242,6 +311,9 @@ def main():
     print(f"    Resting HR:         {len(data['restingHR']):,}")
     print(f"    Workouts:           {len(data['workouts']):,}")
     print(f"    VO2max readings:    {len(data['vo2max']):,}")
+    print(f"    HRV (SDNN):         {len(data['hrv']):,}")
+    print(f"    Walking HR avg:     {len(data['walkingHR']):,}")
+    print(f"    Body mass:          {len(data['bodyMass']):,}")
     print(f"")
     print(f"  Now open the dashboard and drop in {os.path.basename(output_path)}")
     print(f"{'='*50}\n")

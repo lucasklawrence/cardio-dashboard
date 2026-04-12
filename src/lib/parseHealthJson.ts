@@ -10,6 +10,11 @@ interface CompactVo2 {
   v: number;
 }
 
+interface CompactMass {
+  d: string;
+  lb: number;
+}
+
 interface CompactWorkout {
   t: string;
   dur: number;
@@ -28,34 +33,70 @@ interface CompactHealthData {
   restingHR?: CompactSample[];
   workouts?: CompactWorkout[];
   vo2max?: CompactVo2[];
+  hrv?: CompactVo2[];
+  walkingHR?: CompactSample[];
+  bodyMass?: CompactMass[];
 }
 
 export function hydrateHealthJson(raw: CompactHealthData): HealthData {
+  const byDate = (a: { date: Date }, b: { date: Date }) =>
+    a.date.getTime() - b.date.getTime();
+  const byStartDate = (a: { startDate: Date }, b: { startDate: Date }) =>
+    a.startDate.getTime() - b.startDate.getTime();
+
+  const heartRateSamples = (raw.heartRateSamples || []).map((s) => ({
+    date: new Date(s.d),
+    bpm: s.b,
+  }));
+  const restingHR = (raw.restingHR || []).map((s) => ({
+    date: new Date(s.d),
+    bpm: s.b,
+  }));
+  const workouts = (raw.workouts || []).map((w) => ({
+    type: w.t,
+    duration: w.dur,
+    durationUnit: w.du,
+    startDate: new Date(w.sd),
+    endDate: new Date(w.ed),
+    calories: w.cal,
+    distanceMi: w.dmi,
+    distanceKm: w.dkm,
+    elevationM: w.elev,
+    elevationFlights: w.elevF ?? null,
+  }));
+  const vo2max = (raw.vo2max || []).map((s) => ({
+    date: new Date(s.d),
+    value: s.v,
+  }));
+  const hrv = (raw.hrv || []).map((s) => ({
+    date: new Date(s.d),
+    value: s.v,
+  }));
+  const walkingHR = (raw.walkingHR || []).map((s) => ({
+    date: new Date(s.d),
+    bpm: s.b,
+  }));
+  const bodyMass = (raw.bodyMass || []).map((s) => ({
+    date: new Date(s.d),
+    lbs: s.lb,
+  }));
+
+  heartRateSamples.sort(byDate);
+  restingHR.sort(byDate);
+  workouts.sort(byStartDate);
+  vo2max.sort(byDate);
+  hrv.sort(byDate);
+  walkingHR.sort(byDate);
+  bodyMass.sort(byDate);
+
   return {
-    heartRateSamples: (raw.heartRateSamples || []).map((s) => ({
-      date: new Date(s.d),
-      bpm: s.b,
-    })),
-    restingHR: (raw.restingHR || []).map((s) => ({
-      date: new Date(s.d),
-      bpm: s.b,
-    })),
-    workouts: (raw.workouts || []).map((w) => ({
-      type: w.t,
-      duration: w.dur,
-      durationUnit: w.du,
-      startDate: new Date(w.sd),
-      endDate: new Date(w.ed),
-      calories: w.cal,
-      distanceMi: w.dmi,
-      distanceKm: w.dkm,
-      elevationM: w.elev,
-      elevationFlights: w.elevF ?? null,
-    })),
+    heartRateSamples,
+    restingHR,
+    workouts,
     stepCounts: [],
-    vo2max: (raw.vo2max || []).map((s) => ({
-      date: new Date(s.d),
-      value: s.v,
-    })),
+    vo2max,
+    hrv,
+    walkingHR,
+    bodyMass,
   };
 }
