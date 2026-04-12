@@ -15,6 +15,8 @@ export async function parseHealthXml(
     hrv: [],
     walkingHR: [],
     bodyMass: [],
+    sleep: [],
+    activeEnergy: [],
   };
 
   const workoutsByStart = new Map<string, Workout[]>();
@@ -211,24 +213,91 @@ export async function parseHealthXml(
   onProgress('mass', 'done', data.bodyMass.length);
   await tick();
 
-  // Step counts
+  // Step counts (aggregate to daily totals)
   onProgress('steps', 'active');
   await tick();
   const stepRegex =
     /<Record type="HKQuantityTypeIdentifierStepCount"[^>]*startDate="([^"]*)"[^>]*value="([^"]*)"/g;
+  const stepsByDay = new Map<string, number>();
   let stepCount = 0;
   while ((match = stepRegex.exec(xml)) !== null) {
-    data.stepCounts.push({
-      date: new Date(match[1]),
-      count: parseInt(match[2], 10),
-    });
+    const date = new Date(match[1]);
+    const count = parseInt(match[2], 10);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(count)) continue;
+    const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    stepsByDay.set(dayKey, (stepsByDay.get(dayKey) || 0) + count);
     stepCount++;
     if (stepCount % 50000 === 0) {
       onProgress('steps', 'active', stepCount);
       await tick();
     }
   }
-  onProgress('steps', 'done', stepCount);
+  for (const [dayKey, total] of stepsByDay) {
+    data.stepCounts.push({ date: new Date(dayKey + 'T00:00:00'), count: total });
+  }
+  onProgress('steps', 'done', `${stepsByDay.size} days`);
+  await tick();
+
+  // Sleep analysis
+  onProgress('sleep', 'active');
+  await tick();
+  const sleepRegex =
+    /<Record\b[^>]*type="HKCategoryTypeIdentifierSleepAnalysis"[^>]*>/g;
+  const SLEEP_STAGES = new Set(['AsleepCore', 'AsleepDeep', 'AsleepREM', 'Asleep']);
+  const sleepByNight = new Map<string, number>();
+  let sleepRecords = 0;
+  while ((match = sleepRegex.exec(xml)) !== null) {
+    const record = match[0];
+    const valueM = record.match(/\bvalue="(?:HKCategoryValueSleepAnalysis)?(\w+)"/);
+    if (!valueM || !SLEEP_STAGES.has(valueM[1])) continue;
+    const startM = record.match(/\bstartDate="([^"]*)"/);
+    const endM = record.match(/\bendDate="([^"]*)"/);
+    if (!startM || !endM) continue;
+    const start = new Date(startM[1]);
+    const end = new Date(endM[1]);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) continue;
+    const hours = (end.getTime() - start.getTime()) / 3_600_000;
+    if (hours <= 0 || hours > 24) continue;
+    // Assign to "night": if sleep starts before noon, count as previous day's night
+    const night = new Date(start);
+    if (night.getHours() < 12) night.setDate(night.getDate() - 1);
+    const nightKey = `${night.getFullYear()}-${String(night.getMonth() + 1).padStart(2, '0')}-${String(night.getDate()).padStart(2, '0')}`;
+    sleepByNight.set(nightKey, (sleepByNight.get(nightKey) || 0) + hours);
+    sleepRecords++;
+  }
+  for (const [nightKey, hours] of sleepByNight) {
+    data.sleep.push({ date: new Date(nightKey + 'T00:00:00'), hours: Math.round(hours * 100) / 100 });
+  }
+  onProgress('sleep', 'done', `${sleepByNight.size} nights`);
+  await tick();
+
+  // Active energy burned (aggregate to daily totals)
+  onProgress('energy', 'active');
+  await tick();
+  const energyRegex =
+    /<Record\b[^>]*type="HKQuantityTypeIdentifierActiveEnergyBurned"[^>]*>/g;
+  const energyByDay = new Map<string, number>();
+  let energyCount = 0;
+  while ((match = energyRegex.exec(xml)) !== null) {
+    const record = match[0];
+    const dateM = record.match(/\bstartDate="([^"]*)"/);
+    const valueM = record.match(/\bvalue="([^"]*)"/);
+    if (!dateM || !valueM) continue;
+    const date = new Date(dateM[1]);
+    const kcal = parseFloat(valueM[1]);
+    if (Number.isNaN(date.getTime()) || !Number.isFinite(kcal)) continue;
+    const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    energyByDay.set(dayKey, (energyByDay.get(dayKey) || 0) + kcal);
+    energyCount++;
+    if (energyCount % 50000 === 0) {
+      onProgress('energy', 'active', energyCount);
+      await tick();
+    }
+  }
+  for (const [dayKey, total] of energyByDay) {
+    data.activeEnergy.push({ date: new Date(dayKey + 'T00:00:00'), kcal: Math.round(total) });
+  }
+  onProgress('energy', 'done', `${energyByDay.size} days`);
   await tick();
 
   // Sort
@@ -242,6 +311,8 @@ export async function parseHealthXml(
   data.walkingHR.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.bodyMass.sort((a, b) => a.date.getTime() - b.date.getTime());
   data.stepCounts.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.sleep.sort((a, b) => a.date.getTime() - b.date.getTime());
+  data.activeEnergy.sort((a, b) => a.date.getTime() - b.date.getTime());
   onProgress('sort', 'done');
   await tick();
 

@@ -142,3 +142,113 @@ describe('parseHealthXml walking HR', () => {
     expect(data.walkingHR).toHaveLength(0);
   });
 });
+
+describe('parseHealthXml step counts', () => {
+  it('aggregates multiple step records on the same day', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-01-15T08:00:00" value="3000"/>' +
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-01-15T14:00:00" value="5000"/>' +
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-01-15T19:00:00" value="2000"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.stepCounts).toHaveLength(1);
+    expect(data.stepCounts[0].count).toBe(10000);
+  });
+
+  it('separates steps from different days', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-01-15T08:00:00" value="5000"/>' +
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-01-16T10:00:00" value="8000"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.stepCounts).toHaveLength(2);
+    expect(data.stepCounts[0].count).toBe(5000);
+    expect(data.stepCounts[1].count).toBe(8000);
+  });
+
+  it('skips records with invalid values', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierStepCount" startDate="2026-01-15T08:00:00" value="abc"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.stepCounts).toHaveLength(0);
+  });
+});
+
+describe('parseHealthXml sleep', () => {
+  it('parses asleep records and computes duration', async () => {
+    const xml = wrapXml(
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleepCore" startDate="2026-01-15T23:00:00" endDate="2026-01-16T02:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.sleep).toHaveLength(1);
+    expect(data.sleep[0].hours).toBeCloseTo(3);
+  });
+
+  it('assigns early-morning sleep to previous night', async () => {
+    const xml = wrapXml(
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleepDeep" startDate="2026-01-16T01:00:00" endDate="2026-01-16T03:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.sleep).toHaveLength(1);
+    // Started at 1am on Jan 16 → assigned to Jan 15 night
+    expect(data.sleep[0].date.getDate()).toBe(15);
+  });
+
+  it('sums multiple sleep segments in one night', async () => {
+    const xml = wrapXml(
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleepCore" startDate="2026-01-15T23:00:00" endDate="2026-01-16T02:00:00"/>' +
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleepREM" startDate="2026-01-16T02:00:00" endDate="2026-01-16T04:00:00"/>' +
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleepDeep" startDate="2026-01-16T04:00:00" endDate="2026-01-16T06:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.sleep).toHaveLength(1);
+    expect(data.sleep[0].hours).toBeCloseTo(7);
+  });
+
+  it('skips InBed and Awake records', async () => {
+    const xml = wrapXml(
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisInBed" startDate="2026-01-15T22:00:00" endDate="2026-01-16T06:00:00"/>' +
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAwake" startDate="2026-01-16T03:00:00" endDate="2026-01-16T03:30:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.sleep).toHaveLength(0);
+  });
+
+  it('skips records with negative or excessive duration', async () => {
+    const xml = wrapXml(
+      '<Record type="HKCategoryTypeIdentifierSleepAnalysis" value="HKCategoryValueSleepAnalysisAsleep" startDate="2026-01-16T06:00:00" endDate="2026-01-15T23:00:00"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.sleep).toHaveLength(0);
+  });
+});
+
+describe('parseHealthXml active energy', () => {
+  it('aggregates multiple energy records on the same day', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-01-15T08:00:00" value="150.5"/>' +
+      '<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-01-15T14:00:00" value="200.3"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.activeEnergy).toHaveLength(1);
+    expect(data.activeEnergy[0].kcal).toBe(351);
+  });
+
+  it('separates energy from different days', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-01-15T08:00:00" value="400"/>' +
+      '<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-01-16T10:00:00" value="350"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.activeEnergy).toHaveLength(2);
+  });
+
+  it('skips records with invalid values', async () => {
+    const xml = wrapXml(
+      '<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2026-01-15T08:00:00" value="abc"/>',
+    );
+    const data = await parseHealthXml(xml, noopProgress);
+    expect(data.activeEnergy).toHaveLength(0);
+  });
+});

@@ -73,6 +73,28 @@ describe('aggregateTimeSeries', () => {
     });
   });
 
+  describe('sum reducer', () => {
+    it('sums values instead of averaging for week mode', () => {
+      const data = [pt('2026-01-05', 8000), pt('2026-01-07', 10000), pt('2026-01-09', 6000)];
+      const result = aggregateTimeSeries(data, 'week', 'sum');
+      expect(result).toHaveLength(1);
+      expect(result[0].value).toBe(24000);
+    });
+
+    it('sums values instead of averaging for month mode', () => {
+      const data = [pt('2026-03-01', 500), pt('2026-03-15', 600), pt('2026-03-28', 400)];
+      const result = aggregateTimeSeries(data, 'month', 'sum');
+      expect(result).toHaveLength(1);
+      expect(result[0].value).toBe(1500);
+    });
+
+    it('defaults to avg when reducer is not specified', () => {
+      const data = [pt('2026-01-05', 10), pt('2026-01-07', 20)];
+      const result = aggregateTimeSeries(data, 'week');
+      expect(result[0].value).toBeCloseTo(15);
+    });
+  });
+
   it('handles single data point', () => {
     const data = [pt('2026-06-15', 42)];
     const weekResult = aggregateTimeSeries(data, 'week');
