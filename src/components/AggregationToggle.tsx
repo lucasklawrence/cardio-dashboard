@@ -19,6 +19,7 @@ export function AggregationToggle({ mode, onChange }: AggregationToggleProps) {
           key={m.value}
           type="button"
           className={`agg-btn${mode === m.value ? ' active' : ''}`}
+          aria-pressed={mode === m.value}
           onClick={() => onChange(m.value)}
         >
           {m.label}

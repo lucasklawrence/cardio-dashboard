@@ -30,6 +30,14 @@ export function GoalInput({ value, onChange, unit }: GoalInputProps) {
     setEditing(false);
   };
 
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const next = e.relatedTarget as Node | null;
+    if (next && e.currentTarget.parentElement?.contains(next)) {
+      return;
+    }
+    handleSubmit();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSubmit();
     if (e.key === 'Escape') setEditing(false);
@@ -43,7 +51,7 @@ export function GoalInput({ value, onChange, unit }: GoalInputProps) {
           type="number"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onBlur={handleSubmit}
+          onBlur={handleInputBlur}
           onKeyDown={handleKeyDown}
           placeholder="target"
           aria-label={`Goal target (${unit})`}
