@@ -30,7 +30,8 @@ export function PaceChart({ summaries, zones }: PaceChartProps) {
             backgroundColor: 'rgba(234, 179, 8, 0.08)',
             fill: true,
             spanGaps: false,
-            tension: 0.3,
+            tension: 0.4,
+            cubicInterpolationMode: 'monotone' as const,
             pointRadius: 3,
             pointHoverRadius: 5,
             pointBackgroundColor: withPace.map(
