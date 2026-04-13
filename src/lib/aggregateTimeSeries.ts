@@ -5,6 +5,10 @@ interface TimePoint {
   value: number;
 }
 
+function getDayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function getISOWeekMonday(d: Date): string {
   const day = new Date(d);
   const dow = day.getDay();
@@ -24,24 +28,28 @@ export function aggregateTimeSeries(
   mode: AggregationMode,
   reducer: AggregationReducer = 'avg',
 ): TimePoint[] {
-  if (mode === 'day' || data.length === 0) return data;
+  if (data.length === 0) return data;
 
   const groups = new Map<string, number[]>();
   const groupDates = new Map<string, Date>();
 
   for (const point of data) {
-    const key = mode === 'week'
-      ? getISOWeekMonday(point.date)
-      : getMonthKey(point.date);
+    const key = mode === 'day'
+      ? getDayKey(point.date)
+      : mode === 'week'
+        ? getISOWeekMonday(point.date)
+        : getMonthKey(point.date);
 
     const existing = groups.get(key);
     if (existing) {
       existing.push(point.value);
     } else {
       groups.set(key, [point.value]);
-      const representative = mode === 'week'
-        ? new Date(key + 'T00:00:00')
-        : new Date(point.date.getFullYear(), point.date.getMonth(), 1);
+      const representative = mode === 'day'
+        ? new Date(point.date.getFullYear(), point.date.getMonth(), point.date.getDate())
+        : mode === 'week'
+          ? new Date(key + 'T00:00:00')
+          : new Date(point.date.getFullYear(), point.date.getMonth(), 1);
       groupDates.set(key, representative);
     }
   }

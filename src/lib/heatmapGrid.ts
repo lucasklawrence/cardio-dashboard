@@ -82,8 +82,8 @@ export function buildHeatmapGrid(
         types: entry?.types ?? [],
       });
 
-      // Track month labels (on Monday row)
-      if (row === 0 && date.getMonth() !== lastMonth) {
+      // Track month labels (first new-month date in this column)
+      if (date.getMonth() !== lastMonth) {
         lastMonth = date.getMonth();
         monthLabels.push({ col, label: months[date.getMonth()] });
       }

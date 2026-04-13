@@ -170,7 +170,7 @@ export function Dashboard() {
         <DateFilter />
       </div>
 
-      {totalSessions === 0 ? (
+      {totalSessions === 0 && filteredWorkouts.length === 0 ? (
         <div className="empty-state dashboard-section">
           <p>
             No {ACTIVITY_TABS[activeTab].label.toLowerCase()} sessions found in this
@@ -182,16 +182,20 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="dashboard-section">
-            <StatsGrid
-              summaries={summaries}
-              restingHR={rhr}
-              activeTab={activeTab}
-            />
-          </div>
-          <div className="dashboard-section">
-            <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
-          </div>
+          {totalSessions > 0 && (
+            <>
+              <div className="dashboard-section">
+                <StatsGrid
+                  summaries={summaries}
+                  restingHR={rhr}
+                  activeTab={activeTab}
+                />
+              </div>
+              <div className="dashboard-section">
+                <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
+              </div>
+            </>
+          )}
 
           {activeTab === 'all' ? (
             <>
