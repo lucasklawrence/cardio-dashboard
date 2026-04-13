@@ -6,6 +6,10 @@ export interface HeatmapCell {
   types: string[];
 }
 
+const DAY_MS = 86_400_000;
+const WEEK_MS = 7 * DAY_MS;
+const MAX_COLS = 104; // cap at ~2 years to limit DOM size
+
 /** Get the Monday at or before a given date. */
 function getMondayOf(d: Date): Date {
   const m = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -18,6 +22,7 @@ function getMondayOf(d: Date): Date {
  * Build a 7-row (Mon–Sun) x N-column grid of workout counts.
  * When dateFrom/dateTo are provided the grid spans that range;
  * otherwise it shows the last 52 weeks ending at the current week.
+ * Capped at MAX_COLS weeks to limit DOM node count.
  */
 export function buildHeatmapGrid(
   workouts: { startDate: Date; type: string }[],
@@ -26,15 +31,18 @@ export function buildHeatmapGrid(
 ): { grid: HeatmapCell[][]; monthLabels: { col: number; label: string }[] } {
   const endMonday = getMondayOf(dateTo ?? new Date());
   // End of grid = Sunday of that week
-  const endDate = new Date(endMonday);
-  endDate.setDate(endMonday.getDate() + 6);
+  const endDate = new Date(endMonday.getTime() + 6 * DAY_MS);
 
   let startMonday: Date;
   if (dateFrom) {
     startMonday = getMondayOf(dateFrom);
+    // If the range is very wide, clamp to show only the last MAX_COLS weeks
+    const maxStart = new Date(endMonday.getTime() - MAX_COLS * WEEK_MS);
+    if (startMonday.getTime() < maxStart.getTime()) {
+      startMonday = maxStart;
+    }
   } else {
-    startMonday = new Date(endMonday);
-    startMonday.setDate(endMonday.getDate() - 52 * 7);
+    startMonday = new Date(endMonday.getTime() - 52 * WEEK_MS);
   }
 
   // Build lookup: YYYY-MM-DD → {count, types[]}
@@ -52,9 +60,10 @@ export function buildHeatmapGrid(
     }
   }
 
-  // Build grid: one column per week between startMonday and endDate
-  const diffMs = endDate.getTime() - startMonday.getTime();
-  const totalCols = Math.floor(diffMs / (7 * 86_400_000)) + 1;
+  // Build grid using timestamp arithmetic (avoids setDate overflow)
+  const startMs = startMonday.getTime();
+  const diffMs = endDate.getTime() - startMs;
+  const totalCols = Math.floor(diffMs / WEEK_MS) + 1;
   const grid: HeatmapCell[][] = Array.from({ length: 7 }, () => []);
   const monthLabels: { col: number; label: string }[] = [];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -62,8 +71,7 @@ export function buildHeatmapGrid(
 
   for (let col = 0; col < totalCols; col++) {
     for (let row = 0; row < 7; row++) {
-      const date = new Date(startMonday);
-      date.setDate(startMonday.getDate() + col * 7 + row);
+      const date = new Date(startMs + (col * 7 + row) * DAY_MS);
 
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const entry = lookup.get(key);

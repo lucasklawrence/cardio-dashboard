@@ -29,6 +29,10 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
   if (totalCols === 0) return null;
 
   const totalWorkouts = workouts.length;
+  const monthMap = useMemo(
+    () => new Map(monthLabels.map((m) => [m.col, m.label])),
+    [monthLabels],
+  );
 
   return (
     <div className="section">
@@ -51,12 +55,9 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
               className="heatmap-months"
               style={{ gridTemplateColumns: `repeat(${totalCols}, minmax(8px, 14px))` }}
             >
-              {Array.from({ length: totalCols }, (_, col) => {
-                const ml = monthLabels.find((m) => m.col === col);
-                return (
-                  <span key={col}>{ml?.label ?? ''}</span>
-                );
-              })}
+              {Array.from({ length: totalCols }, (_, col) => (
+                <span key={col}>{monthMap.get(col) ?? ''}</span>
+              ))}
             </div>
             <div
               className="heatmap-cells"
