@@ -26,13 +26,13 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
   );
 
   const totalCols = grid[0]?.length ?? 0;
-  if (totalCols === 0) return null;
-
-  const totalWorkouts = workouts.length;
   const monthMap = useMemo(
     () => new Map(monthLabels.map((m) => [m.col, m.label])),
     [monthLabels],
   );
+  if (totalCols === 0) return null;
+
+  const totalWorkouts = workouts.length;
 
   return (
     <div className="section">
