@@ -6,9 +6,20 @@ function pt(dateStr: string, value: number) {
 }
 
 describe('aggregateTimeSeries', () => {
-  it('returns data unchanged in day mode', () => {
-    const data = [pt('2026-01-05', 10), pt('2026-01-06', 20)];
-    expect(aggregateTimeSeries(data, 'day')).toBe(data);
+  it('aggregates same-day points in day mode', () => {
+    const data = [pt('2026-01-05', 10), pt('2026-01-05', 20), pt('2026-01-06', 30)];
+    const result = aggregateTimeSeries(data, 'day');
+    expect(result).toHaveLength(2);
+    expect(result[0].value).toBeCloseTo(15); // avg of 10, 20
+    expect(result[1].value).toBeCloseTo(30);
+  });
+
+  it('sums same-day points in day mode with sum reducer', () => {
+    const data = [pt('2026-01-05', 1.5), pt('2026-01-05', 2.0), pt('2026-01-06', 3.0)];
+    const result = aggregateTimeSeries(data, 'day', 'sum');
+    expect(result).toHaveLength(2);
+    expect(result[0].value).toBeCloseTo(3.5);
+    expect(result[1].value).toBeCloseTo(3.0);
   });
 
   it('returns empty array unchanged', () => {

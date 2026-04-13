@@ -30,6 +30,9 @@ import { PaceHrScatter } from './charts/PaceHrScatter';
 import { StepCountChart } from './charts/StepCountChart';
 import { SleepChart } from './charts/SleepChart';
 import { ActiveEnergyChart } from './charts/ActiveEnergyChart';
+import { PaceTrendChart } from './charts/PaceTrendChart';
+import { TrainingVolumeChart } from './charts/TrainingVolumeChart';
+import { WorkoutHeatmap } from './WorkoutHeatmap';
 
 const SUB_ACTIVITIES: ActivityTab[] = ['stairs', 'run', 'walk'];
 
@@ -121,7 +124,7 @@ export function Dashboard() {
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
 
-    return { summaries, rhr, vo2, hrv, walkingHR, bodyMass, stepCounts, sleep, activeEnergy, overallZones };
+    return { summaries, filteredWorkouts, rhr, vo2, hrv, walkingHR, bodyMass, stepCounts, sleep, activeEnergy, overallZones };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
   const tabCounts = useMemo(() => {
@@ -150,7 +153,7 @@ export function Dashboard() {
 
   if (!healthData || !view) return null;
 
-  const { summaries, rhr, vo2, hrv, walkingHR, bodyMass, stepCounts, sleep, activeEnergy, overallZones } = view;
+  const { summaries, filteredWorkouts, rhr, vo2, hrv, walkingHR, bodyMass, stepCounts, sleep, activeEnergy, overallZones } = view;
   const totalSessions = summaries.length;
 
   let figCounter = 1;
@@ -167,7 +170,7 @@ export function Dashboard() {
         <DateFilter />
       </div>
 
-      {totalSessions === 0 ? (
+      {totalSessions === 0 && filteredWorkouts.length === 0 ? (
         <div className="empty-state dashboard-section">
           <p>
             No {ACTIVITY_TABS[activeTab].label.toLowerCase()} sessions found in this
@@ -179,19 +182,28 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="dashboard-section">
-            <StatsGrid
-              summaries={summaries}
-              restingHR={rhr}
-              activeTab={activeTab}
-            />
-          </div>
-          <div className="dashboard-section">
-            <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
-          </div>
+          {totalSessions > 0 && (
+            <>
+              <div className="dashboard-section">
+                <StatsGrid
+                  summaries={summaries}
+                  restingHR={rhr}
+                  activeTab={activeTab}
+                />
+              </div>
+              <div className="dashboard-section">
+                <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
+              </div>
+            </>
+          )}
 
           {activeTab === 'all' ? (
             <>
+              {filteredWorkouts.length > 0 && (
+                <div className="dashboard-section">
+                  <WorkoutHeatmap workouts={filteredWorkouts} fig={figCounter++} dateFrom={dateFrom} dateTo={dateTo} />
+                </div>
+              )}
               <div className="charts-grid dashboard-section">
                 {rhr.length > 1 && (
                   <RhrChart data={rhr} fig={figCounter++} />
@@ -216,6 +228,12 @@ export function Dashboard() {
                 )}
                 {activeEnergy.length > 1 && (
                   <ActiveEnergyChart data={activeEnergy} fig={figCounter++} />
+                )}
+                {summaries.filter(hasRenderablePace).length > 1 && (
+                  <PaceTrendChart summaries={summaries} fig={figCounter++} />
+                )}
+                {filteredWorkouts.length > 1 && (
+                  <TrainingVolumeChart workouts={filteredWorkouts} fig={figCounter++} />
                 )}
               </div>
 
