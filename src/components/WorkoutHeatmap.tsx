@@ -49,7 +49,7 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
           <div className="heatmap-grid">
             <div
               className="heatmap-months"
-              style={{ gridTemplateColumns: `repeat(${totalCols}, 1fr)` }}
+              style={{ gridTemplateColumns: `repeat(${totalCols}, minmax(8px, 14px))` }}
             >
               {Array.from({ length: totalCols }, (_, col) => {
                 const ml = monthLabels.find((m) => m.col === col);
@@ -60,7 +60,7 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
             </div>
             <div
               className="heatmap-cells"
-              style={{ gridTemplateColumns: `repeat(${totalCols}, 1fr)` }}
+              style={{ gridTemplateColumns: `repeat(${totalCols}, minmax(8px, 14px))` }}
             >
               {Array.from({ length: totalCols }, (_, col) =>
                 grid.map((row, rowIdx) => {

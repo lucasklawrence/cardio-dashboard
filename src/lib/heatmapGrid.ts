@@ -54,7 +54,7 @@ export function buildHeatmapGrid(
 
   // Build grid: one column per week between startMonday and endDate
   const diffMs = endDate.getTime() - startMonday.getTime();
-  const totalCols = Math.ceil(diffMs / (7 * 86_400_000)) + 1;
+  const totalCols = Math.floor(diffMs / (7 * 86_400_000)) + 1;
   const grid: HeatmapCell[][] = Array.from({ length: 7 }, () => []);
   const monthLabels: { col: number; label: string }[] = [];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

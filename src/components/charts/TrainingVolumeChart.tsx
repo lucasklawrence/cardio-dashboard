@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ChartConfiguration } from 'chart.js';
-import type { WorkoutSummary } from '../../types';
+import type { Workout } from '../../types';
 import { useChart } from '../../hooks/useChart';
 import { aggregateTimeSeries, type AggregationMode } from '../../lib/aggregateTimeSeries';
 import { useGoal } from '../../lib/goals';
@@ -9,25 +9,30 @@ import { AggregationToggle } from '../AggregationToggle';
 import { GoalInput } from '../GoalInput';
 
 interface TrainingVolumeChartProps {
-  summaries: WorkoutSummary[];
+  workouts: Workout[];
   fig: number;
 }
 
 const MAX_POINTS = 90;
 
-export function TrainingVolumeChart({ summaries, fig }: TrainingVolumeChartProps) {
+function durationMinutes(w: Workout): number {
+  if (w.duration && w.durationUnit === 'min') return w.duration;
+  return (w.endDate.getTime() - w.startDate.getTime()) / 60000;
+}
+
+export function TrainingVolumeChart({ workouts, fig }: TrainingVolumeChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('week');
   const [goal, setGoal] = useGoal('trainingVolume');
 
   const config = useMemo<ChartConfiguration | null>(() => {
-    if (summaries.length < 2) return null;
+    if (workouts.length < 2) return null;
 
-    const raw = summaries.map((s) => ({ date: s.startDate, value: s.durationMin / 60 }));
+    const raw = workouts.map((w) => ({ date: w.startDate, value: durationMinutes(w) / 60 }));
     let series = aggregateTimeSeries(raw, aggMode, 'sum');
 
     if (series.length > MAX_POINTS) {
       const step = Math.ceil(series.length / MAX_POINTS);
-      series = series.filter((_, i) => i % step === 0);
+      series = series.filter((_, i) => i % step === 0 || i === series.length - 1);
     }
 
     return {
@@ -88,7 +93,7 @@ export function TrainingVolumeChart({ summaries, fig }: TrainingVolumeChartProps
         },
       },
     };
-  }, [summaries, aggMode, goal]);
+  }, [workouts, aggMode, goal]);
 
   const ref = useChart(config);
   if (!config) return null;
@@ -100,7 +105,7 @@ export function TrainingVolumeChart({ summaries, fig }: TrainingVolumeChartProps
         <div className="section-header-controls">
           <AggregationToggle mode={aggMode} onChange={setAggMode} />
           <GoalInput value={goal} onChange={setGoal} unit="hrs" />
-          <span className="meta">{summaries.length} sessions</span>
+          <span className="meta">{workouts.length} sessions</span>
         </div>
       </div>
       <div className="chart-container">

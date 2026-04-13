@@ -225,11 +225,11 @@ export function Dashboard() {
                 {activeEnergy.length > 1 && (
                   <ActiveEnergyChart data={activeEnergy} fig={figCounter++} />
                 )}
-                {summaries.length > 1 && (
+                {summaries.filter(hasRenderablePace).length > 1 && (
                   <PaceTrendChart summaries={summaries} fig={figCounter++} />
                 )}
-                {summaries.length > 1 && (
-                  <TrainingVolumeChart summaries={summaries} fig={figCounter++} />
+                {filteredWorkouts.length > 1 && (
+                  <TrainingVolumeChart workouts={filteredWorkouts} fig={figCounter++} />
                 )}
               </div>
 

@@ -45,7 +45,7 @@ export function PaceTrendChart({ summaries, fig }: PaceTrendChartProps) {
 
     if (series.length > MAX_POINTS) {
       const step = Math.ceil(series.length / MAX_POINTS);
-      series = series.filter((_, i) => i % step === 0);
+      series = series.filter((_, i) => i % step === 0 || i === series.length - 1);
     }
 
     const points = series.map((d) => ({ x: d.date.getTime(), y: d.value }));
