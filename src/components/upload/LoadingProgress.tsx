@@ -17,6 +17,7 @@ function formatCount(count: ProgressStage['count']): string {
   return count;
 }
 
+/** Multi-stage loading indicator showing parsing progress with checkmarks, spinners, and counts. */
 export function LoadingProgress({ stages, error }: LoadingProgressProps) {
   return (
     <div className="loading">

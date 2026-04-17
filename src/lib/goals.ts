@@ -26,11 +26,13 @@ function writeGoals(goals: Record<string, number>) {
   }
 }
 
+/** Read a persisted goal value from localStorage by metric ID. */
 export function getGoal(metricId: string): number | null {
   const goals = readGoals();
   return goals[metricId] ?? null;
 }
 
+/** Persist a goal value to localStorage, or remove it when value is null. */
 export function setGoal(metricId: string, value: number | null): void {
   const goals = readGoals();
   if (value == null) {
@@ -41,6 +43,7 @@ export function setGoal(metricId: string, value: number | null): void {
   writeGoals(goals);
 }
 
+/** React hook for reading and writing a localStorage-backed goal value. */
 export function useGoal(metricId: string): [number | null, (v: number | null) => void] {
   const [value, setValueState] = useState<number | null>(() => getGoal(metricId));
 

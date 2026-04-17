@@ -9,6 +9,7 @@ const PRESETS: { label: string; months: number }[] = [
   { label: '1Y', months: 12 },
 ];
 
+/** Date range filter with from/to inputs and quick presets (1M, 3M, 6M, 1Y, YTD, All). */
 export function DateFilter() {
   const { dateFrom, dateTo, setDateFrom, setDateTo, setDatePreset, setDateYTD } =
     useHealthDataContext();

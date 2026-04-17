@@ -96,6 +96,7 @@ function ActivityCharts({ summaries, zones, figStart }: ActivityChartsProps) {
   );
 }
 
+/** Main dashboard view: renders stats, zone bar, charts, heatmap, session log, and data summary based on active tab and date filters. */
 export function Dashboard() {
   const { healthData, activeTab, dateFrom, dateTo, zones } = useHealthDataContext();
 

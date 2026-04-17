@@ -65,6 +65,7 @@ function localDate(d: string): Date {
   return d.includes('T') ? new Date(d) : new Date(d + 'T00:00:00');
 }
 
+/** Hydrate a compact JSON health export into fully typed HealthData with Date objects, sorted chronologically. */
 export function hydrateHealthJson(raw: CompactHealthData): HealthData {
   const heartRateSamples = (raw.heartRateSamples || []).map((s) => ({
     date: new Date(s.d),

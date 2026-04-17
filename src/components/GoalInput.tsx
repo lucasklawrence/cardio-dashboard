@@ -6,6 +6,7 @@ interface GoalInputProps {
   unit: string;
 }
 
+/** Inline goal-setting control: shows a trigger button that opens a number input popover with clear option. */
 export function GoalInput({ value, onChange, unit }: GoalInputProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');

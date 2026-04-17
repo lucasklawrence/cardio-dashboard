@@ -2,6 +2,7 @@ import type { HealthData, ProgressCallback, Workout } from '../types';
 
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+/** Parse an Apple Health export.xml string into HealthData using regex-based streaming extraction. */
 export async function parseHealthXml(
   xml: string,
   onProgress: ProgressCallback,

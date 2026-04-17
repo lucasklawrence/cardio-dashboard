@@ -1,5 +1,6 @@
 import { friendlyType } from './workouts';
 
+/** A single cell in the workout frequency heatmap grid. */
 export interface HeatmapCell {
   date: Date;
   count: number;

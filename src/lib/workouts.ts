@@ -9,6 +9,7 @@ import type {
 } from '../types';
 import { analyzeZoneDistribution } from './zones';
 
+/** Check whether a workout type string belongs to the given activity tab. */
 export function matchesTab(workoutType: string, tab: ActivityTab): boolean {
   if (tab === 'all') {
     return (
@@ -30,10 +31,12 @@ export function matchesTab(workoutType: string, tab: ActivityTab): boolean {
   return false;
 }
 
+/** Filter all workouts in health data to those matching the given tab. */
 export function getWorkoutsForTab(data: HealthData, tab: ActivityTab): Workout[] {
   return data.workouts.filter((w) => matchesTab(w.type, tab));
 }
 
+/** Convert a raw Apple Health workout type string to a short display name. */
 export function friendlyType(workoutType: string): string {
   if (
     workoutType.includes('StairClimbing') ||
@@ -71,12 +74,14 @@ function upperBound(samples: HrSample[], target: Date): number {
   return lo;
 }
 
+/** Extract HR samples that fall within a workout's start–end time range using binary search. */
 export function getHRForWorkout(workout: Workout, hrSamples: HrSample[]): HrSample[] {
   const start = lowerBound(hrSamples, workout.startDate);
   const end = upperBound(hrSamples, workout.endDate);
   return hrSamples.slice(start, end);
 }
 
+/** Build a WorkoutSummary with HR stats, zones, pace, and efficiency. Returns null if no HR data overlaps. */
 export function getWorkoutSummary(
   workout: Workout,
   hrSamples: HrSample[],
@@ -142,6 +147,7 @@ export function getWorkoutSummary(
   };
 }
 
+/** Filter an array to items within the optional dateFrom–dateTo range. */
 export function applyDateFilter<T>(
   items: T[],
   getDate: (item: T) => Date,

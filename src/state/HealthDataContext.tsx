@@ -29,6 +29,7 @@ interface HealthDataContextValue {
 
 const HealthDataContext = createContext<HealthDataContextValue | null>(null);
 
+/** Context provider that holds all shared dashboard state: health data, active tab, date filters, and HR zones. */
 export function HealthDataProvider({ children }: { children: ReactNode }) {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [activeTab, setActiveTab] = useState<ActivityTab>('all');
@@ -84,6 +85,7 @@ export function HealthDataProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Access the shared health data context. Throws if used outside HealthDataProvider. */
 export function useHealthDataContext(): HealthDataContextValue {
   const ctx = useContext(HealthDataContext);
   if (!ctx) {

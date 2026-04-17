@@ -15,6 +15,7 @@ interface StepCountChartProps {
 
 const MAX_POINTS = 90;
 
+/** Daily step count bar chart with sum aggregation, toggle, and optional goal line. */
 export function StepCountChart({ data, fig }: StepCountChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('steps');

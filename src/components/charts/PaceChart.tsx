@@ -12,6 +12,7 @@ interface PaceChartProps {
   zones: Zones;
 }
 
+/** Per-session pace line chart (last 30 sessions) with reversed y-axis and zone-colored points. */
 export function PaceChart({ summaries, zones }: PaceChartProps) {
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     const withPace = summaries

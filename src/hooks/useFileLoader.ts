@@ -8,6 +8,7 @@ function initialStages(): ProgressStage[] {
   return PARSE_STAGES.map((s) => ({ id: s.id, label: s.label, status: 'pending' }));
 }
 
+/** React hook that manages file loading lifecycle: parsing, progress stages, and error state. */
 export function useFileLoader() {
   const { setHealthData } = useHealthDataContext();
   const [loading, setLoading] = useState(false);

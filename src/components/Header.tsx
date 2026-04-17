@@ -1,5 +1,6 @@
 declare const __APP_VERSION__: string;
 
+/** App header with title and version badge. */
 export function Header() {
   return (
     <header>

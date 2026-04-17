@@ -13,6 +13,7 @@ interface WalkingHrChartProps {
 
 const MAX_POINTS = 90;
 
+/** Walking heart rate average line chart with aggregation toggle. */
 export function WalkingHrChart({ data, fig }: WalkingHrChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
 

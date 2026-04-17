@@ -20,6 +20,7 @@ function AppShell() {
   );
 }
 
+/** Root application component that wraps AppShell with the HealthDataProvider. */
 export function App() {
   return (
     <HealthDataProvider>
