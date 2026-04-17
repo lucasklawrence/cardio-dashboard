@@ -23,10 +23,7 @@ export function ZoneBar({ zones, meta }: ZoneBarProps) {
               const pct = zones[z].pct;
               if (pct <= 0) return null;
               return (
-                <div
-                  key={z}
-                  style={{ flex: pct, background: ZONE_COLORS[z] }}
-                >
+                <div key={z} style={{ flex: pct, background: ZONE_COLORS[z] }}>
                   {pct > 5 ? `${Math.round(pct)}%` : ''}
                 </div>
               );

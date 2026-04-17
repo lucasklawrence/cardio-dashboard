@@ -17,15 +17,11 @@ export function StatsGrid({ summaries, restingHR, activeTab }: StatsGridProps) {
       ? Math.round(summaries.reduce((a, s) => a + s.durationMin, 0) / totalSessions)
       : 0;
   const avgHR =
-    totalSessions > 0
-      ? Math.round(summaries.reduce((a, s) => a + s.avgHR, 0) / totalSessions)
-      : 0;
+    totalSessions > 0 ? Math.round(summaries.reduce((a, s) => a + s.avgHR, 0) / totalSessions) : 0;
 
   const withDist = summaries.filter((s) => s.distMi && s.distMi > 0);
   const totalDistMi = withDist.reduce((a, s) => a + (s.distMi || 0), 0);
-  const withPace = withDist.filter(
-    (s) => s.paceMinPerMi != null && s.paceMinPerMi > 0,
-  );
+  const withPace = withDist.filter((s) => s.paceMinPerMi != null && s.paceMinPerMi > 0);
   const avgPaceMin =
     withPace.length > 0
       ? withPace.reduce((a, s) => a + s.paceMinPerMi!, 0) / withPace.length
@@ -34,9 +30,7 @@ export function StatsGrid({ summaries, restingHR, activeTab }: StatsGridProps) {
   const latestRHR = restingHR.length > 0 ? restingHR[restingHR.length - 1].bpm : null;
   const earliestRHR = restingHR.length > 5 ? restingHR[0].bpm : null;
   const rhrDelta =
-    earliestRHR != null && latestRHR != null
-      ? Math.round(latestRHR - earliestRHR)
-      : null;
+    earliestRHR != null && latestRHR != null ? Math.round(latestRHR - earliestRHR) : null;
 
   return (
     <div className="stats-grid">

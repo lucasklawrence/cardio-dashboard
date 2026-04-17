@@ -46,8 +46,8 @@ export function ZoneSettings() {
         ))}
       </div>
       <p className="hint">
-        Default zones use ~60/70/80/90% of max HR. Adjust to match your known
-        thresholds — your Z2 ceiling around 120-130 bpm, Z4 near 160 bpm.
+        Default zones use ~60/70/80/90% of max HR. Adjust to match your known thresholds — your Z2
+        ceiling around 120-130 bpm, Z4 near 160 bpm.
       </p>
     </div>
   );

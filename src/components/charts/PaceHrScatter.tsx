@@ -11,9 +11,7 @@ interface PaceHrScatterProps {
 /** Scatter plot of pace vs avg HR per session — moving down+left indicates improving fitness. */
 export function PaceHrScatter({ summaries }: PaceHrScatterProps) {
   const config = useMemo<ChartConfiguration<'scatter'> | null>(() => {
-    const data = summaries.filter(
-      (s) => s.paceMinPerMi && s.avgHR && s.paceMinPerMi < 30,
-    );
+    const data = summaries.filter((s) => s.paceMinPerMi && s.avgHR && s.paceMinPerMi < 30);
     if (data.length < 3) return null;
 
     const oldest = data[0].startDate.getTime();

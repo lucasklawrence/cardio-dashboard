@@ -17,16 +17,13 @@ export function useFileLoader() {
   const stagesRef = useRef<ProgressStage[]>(stages);
   const loadIdRef = useRef(0);
 
-  const updateStage = useCallback(
-    (id: string, status: ProgressStatus, count?: number | string) => {
-      const next = stagesRef.current.map((s) =>
-        s.id === id ? { ...s, status, count: count ?? s.count } : s,
-      );
-      stagesRef.current = next;
-      setStages(next);
-    },
-    [],
-  );
+  const updateStage = useCallback((id: string, status: ProgressStatus, count?: number | string) => {
+    const next = stagesRef.current.map((s) =>
+      s.id === id ? { ...s, status, count: count ?? s.count } : s,
+    );
+    stagesRef.current = next;
+    setStages(next);
+  }, []);
 
   const load = useCallback(
     async (file: File) => {

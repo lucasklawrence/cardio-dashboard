@@ -23,10 +23,12 @@ export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
         datasets: [
           {
             label: 'Meters/Beat',
-            data: insertGapBreaks(withEff.map((s) => ({
-              x: s.startDate.getTime(),
-              y: parseFloat((s.cardiacEfficiency as number).toFixed(3)),
-            }))),
+            data: insertGapBreaks(
+              withEff.map((s) => ({
+                x: s.startDate.getTime(),
+                y: parseFloat((s.cardiacEfficiency as number).toFixed(3)),
+              })),
+            ),
             borderColor: '#22c55e',
             backgroundColor: 'rgba(34, 197, 94, 0.08)',
             fill: true,

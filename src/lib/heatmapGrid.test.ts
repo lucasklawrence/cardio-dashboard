@@ -1,10 +1,19 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { buildHeatmapGrid } from './heatmapGrid';
 
-function findCell(grid: ReturnType<typeof buildHeatmapGrid>['grid'], year: number, month: number, day: number) {
+function findCell(
+  grid: ReturnType<typeof buildHeatmapGrid>['grid'],
+  year: number,
+  month: number,
+  day: number,
+) {
   for (const row of grid) {
     for (const cell of row) {
-      if (cell.date.getFullYear() === year && cell.date.getMonth() === month && cell.date.getDate() === day) {
+      if (
+        cell.date.getFullYear() === year &&
+        cell.date.getMonth() === month &&
+        cell.date.getDate() === day
+      ) {
         return cell;
       }
     }

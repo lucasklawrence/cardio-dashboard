@@ -95,8 +95,7 @@ export async function parseHealthXml(
   // Distance & elevation
   onProgress('distance', 'active');
   await tick();
-  const workoutBlockRegex =
-    /<Workout\s[^>]*startDate="([^"]*)"[^>]*>([\s\S]*?)(?:<\/Workout>)/g;
+  const workoutBlockRegex = /<Workout\s[^>]*startDate="([^"]*)"[^>]*>([\s\S]*?)(?:<\/Workout>)/g;
   let blockMatch: RegExpExecArray | null;
   let distFound = 0;
   while ((blockMatch = workoutBlockRegex.exec(xml)) !== null) {
@@ -154,8 +153,7 @@ export async function parseHealthXml(
   // HRV (SDNN)
   onProgress('hrv', 'active');
   await tick();
-  const hrvRegex =
-    /<Record\b[^>]*type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*>/g;
+  const hrvRegex = /<Record\b[^>]*type="HKQuantityTypeIdentifierHeartRateVariabilitySDNN"[^>]*>/g;
   while ((match = hrvRegex.exec(xml)) !== null) {
     const record = match[0];
     const dateM = record.match(/\bstartDate="([^"]*)"/);
@@ -172,8 +170,7 @@ export async function parseHealthXml(
   // Walking heart rate average
   onProgress('walkhr', 'active');
   await tick();
-  const walkHrRegex =
-    /<Record\b[^>]*type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*>/g;
+  const walkHrRegex = /<Record\b[^>]*type="HKQuantityTypeIdentifierWalkingHeartRateAverage"[^>]*>/g;
   while ((match = walkHrRegex.exec(xml)) !== null) {
     const record = match[0];
     const dateM = record.match(/\bstartDate="([^"]*)"/);
@@ -190,8 +187,7 @@ export async function parseHealthXml(
   // Body mass
   onProgress('mass', 'active');
   await tick();
-  const massRegex =
-    /<Record type="HKQuantityTypeIdentifierBodyMass"\s([^>]+)/g;
+  const massRegex = /<Record type="HKQuantityTypeIdentifierBodyMass"\s([^>]+)/g;
   while ((match = massRegex.exec(xml)) !== null) {
     const attrs = match[1];
     const dateM = attrs.match(/startDate="([^"]*)"/);
@@ -203,10 +199,7 @@ export async function parseHealthXml(
     if (!Number.isFinite(val) || Number.isNaN(date.getTime())) continue;
 
     const unit = unitM ? unitM[1] : 'lb';
-    const lbs =
-      unit === 'lb' ? val :
-      unit === 'kg' ? val * 2.20462 :
-      NaN;
+    const lbs = unit === 'lb' ? val : unit === 'kg' ? val * 2.20462 : NaN;
     if (!Number.isFinite(lbs)) continue;
 
     data.bodyMass.push({ date, lbs });
@@ -217,8 +210,7 @@ export async function parseHealthXml(
   // Step counts (aggregate to daily totals)
   onProgress('steps', 'active');
   await tick();
-  const stepRegex =
-    /<Record\b[^>]*type="HKQuantityTypeIdentifierStepCount"[^>]*>/g;
+  const stepRegex = /<Record\b[^>]*type="HKQuantityTypeIdentifierStepCount"[^>]*>/g;
   const stepsByDay = new Map<string, number>();
   let stepCount = 0;
   while ((match = stepRegex.exec(xml)) !== null) {
@@ -246,11 +238,9 @@ export async function parseHealthXml(
   // Sleep analysis
   onProgress('sleep', 'active');
   await tick();
-  const sleepRegex =
-    /<Record\b[^>]*type="HKCategoryTypeIdentifierSleepAnalysis"[^>]*>/g;
+  const sleepRegex = /<Record\b[^>]*type="HKCategoryTypeIdentifierSleepAnalysis"[^>]*>/g;
   const SLEEP_STAGES = new Set(['AsleepCore', 'AsleepDeep', 'AsleepREM', 'Asleep']);
   const sleepByNight = new Map<string, number>();
-  let sleepRecords = 0;
   while ((match = sleepRegex.exec(xml)) !== null) {
     const record = match[0];
     const valueM = record.match(/\bvalue="(?:HKCategoryValueSleepAnalysis)?(\w+)"/);
@@ -268,10 +258,12 @@ export async function parseHealthXml(
     if (night.getHours() < 12) night.setDate(night.getDate() - 1);
     const nightKey = `${night.getFullYear()}-${String(night.getMonth() + 1).padStart(2, '0')}-${String(night.getDate()).padStart(2, '0')}`;
     sleepByNight.set(nightKey, (sleepByNight.get(nightKey) || 0) + hours);
-    sleepRecords++;
   }
   for (const [nightKey, hours] of sleepByNight) {
-    data.sleep.push({ date: new Date(nightKey + 'T00:00:00'), hours: Math.round(hours * 100) / 100 });
+    data.sleep.push({
+      date: new Date(nightKey + 'T00:00:00'),
+      hours: Math.round(hours * 100) / 100,
+    });
   }
   onProgress('sleep', 'done', `${sleepByNight.size} nights`);
   await tick();
@@ -279,8 +271,7 @@ export async function parseHealthXml(
   // Active energy burned (aggregate to daily totals)
   onProgress('energy', 'active');
   await tick();
-  const energyRegex =
-    /<Record\b[^>]*type="HKQuantityTypeIdentifierActiveEnergyBurned"[^>]*>/g;
+  const energyRegex = /<Record\b[^>]*type="HKQuantityTypeIdentifierActiveEnergyBurned"[^>]*>/g;
   const energyByDay = new Map<string, number>();
   let energyCount = 0;
   while ((match = energyRegex.exec(xml)) !== null) {

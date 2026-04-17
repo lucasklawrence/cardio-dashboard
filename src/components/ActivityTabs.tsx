@@ -5,8 +5,7 @@ import { applyDateFilter, getWorkoutsForTab } from '../lib/workouts';
 
 /** Tab bar for switching between activity types, showing session counts per tab. */
 export function ActivityTabs() {
-  const { healthData, activeTab, setActiveTab, dateFrom, dateTo } =
-    useHealthDataContext();
+  const { healthData, activeTab, setActiveTab, dateFrom, dateTo } = useHealthDataContext();
 
   const counts = useMemo(() => {
     if (!healthData) return {} as Record<string, number>;
