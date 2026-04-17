@@ -100,8 +100,9 @@ export function Dashboard() {
   const view = useMemo(() => {
     if (!healthData) return null;
 
+    const tabWorkouts = getWorkoutsForTab(healthData, activeTab);
     const filteredWorkouts = applyDateFilter(
-      getWorkoutsForTab(healthData, activeTab),
+      tabWorkouts,
       (w) => w.startDate,
       dateFrom,
       dateTo,
@@ -121,7 +122,7 @@ export function Dashboard() {
 
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
-    const streak = computeStreaks(filteredWorkouts);
+    const streak = computeStreaks(tabWorkouts);
 
     return {
       summaries,
