@@ -24,7 +24,7 @@ Open [http://localhost:5173](http://localhost:5173) and drop an Apple Health `ex
 
 ### Preprocess (optional)
 
-For faster loading, preprocess your export offline:
+For faster loading, preprocess your export offline (requires Python 3):
 
 ```bash
 npm run preprocess -- /path/to/export.xml
