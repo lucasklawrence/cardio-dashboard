@@ -247,6 +247,46 @@ header .version {
   margin-top: 6px;
 }
 
+/* ── Streak Counter ── */
+.streak-counter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.streak-current {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.streak-current.inactive {
+  opacity: 0.35;
+}
+
+.streak-flame {
+  font-size: 18px;
+}
+
+.streak-value {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.streak-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.streak-longest {
+  color: var(--text-dim);
+}
+
 /* ── Section ── */
 .section {
   margin-bottom: 40px;
@@ -886,7 +926,6 @@ header .version {
 .heatmap-cell {
   aspect-ratio: 1;
   min-width: 8px;
-  max-width: 14px;
   border-radius: 2px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -909,4 +948,21 @@ header .version {
 .heatmap-cell.level-3 {
   background: #22c55e;
   border-color: rgba(34, 197, 94, 0.5);
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.heatmap-legend .heatmap-cell {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
 }

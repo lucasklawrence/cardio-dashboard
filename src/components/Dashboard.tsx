@@ -3,6 +3,7 @@ import { ACTIVITY_TABS } from '../constants';
 import { useHealthDataContext } from '../state/HealthDataContext';
 import { applyDateFilter, getWorkoutSummary, getWorkoutsForTab, matchesTab } from '../lib/workouts';
 import { analyzeZoneDistribution } from '../lib/zones';
+import { computeStreaks } from '../lib/streaks';
 import type { ActivityTab, WorkoutSummary } from '../types';
 
 import { ZoneSettings } from './ZoneSettings';
@@ -12,6 +13,7 @@ import { StatsGrid } from './StatsGrid';
 import { ZoneBar } from './ZoneBar';
 import { SessionLog } from './SessionLog';
 import { DataSummary } from './DataSummary';
+import { StreakCounter } from './StreakCounter';
 
 import { RhrChart } from './charts/RhrChart';
 import { Vo2Chart } from './charts/Vo2Chart';
@@ -98,8 +100,9 @@ export function Dashboard() {
   const view = useMemo(() => {
     if (!healthData) return null;
 
+    const tabWorkouts = getWorkoutsForTab(healthData, activeTab);
     const filteredWorkouts = applyDateFilter(
-      getWorkoutsForTab(healthData, activeTab),
+      tabWorkouts,
       (w) => w.startDate,
       dateFrom,
       dateTo,
@@ -119,6 +122,9 @@ export function Dashboard() {
 
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
+    const streak = computeStreaks(tabWorkouts);
+    const hasDateFilter = dateFrom != null || dateTo != null;
+    const filteredStreak = hasDateFilter ? computeStreaks(filteredWorkouts) : null;
 
     return {
       summaries,
@@ -132,6 +138,8 @@ export function Dashboard() {
       sleep,
       activeEnergy,
       overallZones,
+      streak,
+      filteredStreak,
     };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
@@ -173,6 +181,8 @@ export function Dashboard() {
     sleep,
     activeEnergy,
     overallZones,
+    streak,
+    filteredStreak,
   } = view;
   const totalSessions = summaries.length;
 
@@ -208,6 +218,11 @@ export function Dashboard() {
                 <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
               </div>
             </>
+          )}
+          {(streak.current > 0 || streak.longest > 0) && (
+            <div className="dashboard-section">
+              <StreakCounter streak={streak} filteredStreak={filteredStreak} />
+            </div>
           )}
 
           {activeTab === 'all' ? (
