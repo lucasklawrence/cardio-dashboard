@@ -252,9 +252,6 @@ header .version {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
 }
 
 .streak-current {

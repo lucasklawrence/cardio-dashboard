@@ -208,12 +208,16 @@ export function Dashboard() {
             <>
               <div className="dashboard-section">
                 <StatsGrid summaries={summaries} restingHR={rhr} activeTab={activeTab} />
-                <StreakCounter streak={streak} />
               </div>
               <div className="dashboard-section">
                 <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
               </div>
             </>
+          )}
+          {(streak.current > 0 || streak.longest > 0) && (
+            <div className="dashboard-section">
+              <StreakCounter streak={streak} />
+            </div>
           )}
 
           {activeTab === 'all' ? (
