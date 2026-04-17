@@ -3,6 +3,7 @@ import { ACTIVITY_TABS } from '../constants';
 import { useHealthDataContext } from '../state/HealthDataContext';
 import { applyDateFilter, getWorkoutSummary, getWorkoutsForTab, matchesTab } from '../lib/workouts';
 import { analyzeZoneDistribution } from '../lib/zones';
+import { computeStreaks } from '../lib/streaks';
 import type { ActivityTab, WorkoutSummary } from '../types';
 
 import { ZoneSettings } from './ZoneSettings';
@@ -12,6 +13,7 @@ import { StatsGrid } from './StatsGrid';
 import { ZoneBar } from './ZoneBar';
 import { SessionLog } from './SessionLog';
 import { DataSummary } from './DataSummary';
+import { StreakCounter } from './StreakCounter';
 
 import { RhrChart } from './charts/RhrChart';
 import { Vo2Chart } from './charts/Vo2Chart';
@@ -119,6 +121,7 @@ export function Dashboard() {
 
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
+    const streak = computeStreaks(filteredWorkouts);
 
     return {
       summaries,
@@ -132,6 +135,7 @@ export function Dashboard() {
       sleep,
       activeEnergy,
       overallZones,
+      streak,
     };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
@@ -173,6 +177,7 @@ export function Dashboard() {
     sleep,
     activeEnergy,
     overallZones,
+    streak,
   } = view;
   const totalSessions = summaries.length;
 
@@ -203,6 +208,7 @@ export function Dashboard() {
             <>
               <div className="dashboard-section">
                 <StatsGrid summaries={summaries} restingHR={rhr} activeTab={activeTab} />
+                <StreakCounter streak={streak} />
               </div>
               <div className="dashboard-section">
                 <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
