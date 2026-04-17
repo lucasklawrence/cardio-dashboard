@@ -74,7 +74,6 @@ describe('hydrateHealthJson', () => {
     expect(data.bodyMass).toHaveLength(1);
     expect(data.bodyMass[0].lbs).toBe(175.5);
     expect(data.bodyMass[0].date).toBeInstanceOf(Date);
-
   });
 
   it('sorts resting HR by date', () => {
@@ -164,9 +163,7 @@ describe('hydrateHealthJson', () => {
       ],
     };
     const data = hydrateHealthJson(raw);
-    expect(data.workouts[0].startDate.getTime()).toBeLessThan(
-      data.workouts[1].startDate.getTime(),
-    );
+    expect(data.workouts[0].startDate.getTime()).toBeLessThan(data.workouts[1].startDate.getTime());
   });
 
   it('sorts vo2max, hrv, walkingHR, and bodyMass by date', () => {

@@ -4,10 +4,7 @@ import { parseHealthXml } from './parseHealthXml';
 import { hydrateHealthJson } from './parseHealthJson';
 
 /** Load a health data file (ZIP, XML, or JSON), decompress if needed, and parse into HealthData. */
-export async function loadFile(
-  file: File,
-  onProgress: ProgressCallback,
-): Promise<HealthData> {
+export async function loadFile(file: File, onProgress: ProgressCallback): Promise<HealthData> {
   const name = file.name.toLowerCase();
 
   if (name.endsWith('.json')) {
@@ -27,8 +24,7 @@ export async function loadFile(
         f.endsWith('Export.xml') ||
         f.toLowerCase().includes('export.xml'),
     );
-    const target =
-      xmlFile ?? Object.keys(zip.files).find((f) => f.endsWith('.xml'));
+    const target = xmlFile ?? Object.keys(zip.files).find((f) => f.endsWith('.xml'));
     if (!target) throw new Error('No export.xml found in ZIP');
     xmlText = await zip.files[target].async('text');
   } else {

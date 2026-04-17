@@ -10,10 +10,7 @@ export function hrZone(bpm: number, zones: Zones): ZoneNumber {
 }
 
 /** Compute the count and percentage breakdown of HR samples across all 5 zones. */
-export function analyzeZoneDistribution(
-  samples: HrSample[],
-  zones: Zones,
-): ZoneDistribution {
+export function analyzeZoneDistribution(samples: HrSample[], zones: Zones): ZoneDistribution {
   const counts: Record<ZoneNumber, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   for (const s of samples) counts[hrZone(s.bpm, zones)]++;
   const total = samples.length || 1;

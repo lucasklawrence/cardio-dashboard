@@ -36,9 +36,7 @@ export function DateFilter() {
       <input
         type="date"
         value={toDateInputValue(dateTo)}
-        onChange={(e) =>
-          setDateTo(e.target.value ? new Date(e.target.value + 'T23:59:59') : null)
-        }
+        onChange={(e) => setDateTo(e.target.value ? new Date(e.target.value + 'T23:59:59') : null)}
       />
       <div className="date-presets">
         {PRESETS.map((p) => (

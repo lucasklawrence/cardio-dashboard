@@ -1,12 +1,7 @@
 import { useMemo } from 'react';
 import { ACTIVITY_TABS } from '../constants';
 import { useHealthDataContext } from '../state/HealthDataContext';
-import {
-  applyDateFilter,
-  getWorkoutSummary,
-  getWorkoutsForTab,
-  matchesTab,
-} from '../lib/workouts';
+import { applyDateFilter, getWorkoutSummary, getWorkoutsForTab, matchesTab } from '../lib/workouts';
 import { analyzeZoneDistribution } from '../lib/zones';
 import type { ActivityTab, WorkoutSummary } from '../types';
 
@@ -125,7 +120,19 @@ export function Dashboard() {
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
 
-    return { summaries, filteredWorkouts, rhr, vo2, hrv, walkingHR, bodyMass, stepCounts, sleep, activeEnergy, overallZones };
+    return {
+      summaries,
+      filteredWorkouts,
+      rhr,
+      vo2,
+      hrv,
+      walkingHR,
+      bodyMass,
+      stepCounts,
+      sleep,
+      activeEnergy,
+      overallZones,
+    };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
   const tabCounts = useMemo(() => {
@@ -154,7 +161,19 @@ export function Dashboard() {
 
   if (!healthData || !view) return null;
 
-  const { summaries, filteredWorkouts, rhr, vo2, hrv, walkingHR, bodyMass, stepCounts, sleep, activeEnergy, overallZones } = view;
+  const {
+    summaries,
+    filteredWorkouts,
+    rhr,
+    vo2,
+    hrv,
+    walkingHR,
+    bodyMass,
+    stepCounts,
+    sleep,
+    activeEnergy,
+    overallZones,
+  } = view;
   const totalSessions = summaries.length;
 
   let figCounter = 1;
@@ -174,23 +193,16 @@ export function Dashboard() {
       {totalSessions === 0 && filteredWorkouts.length === 0 ? (
         <div className="empty-state dashboard-section">
           <p>
-            No {ACTIVITY_TABS[activeTab].label.toLowerCase()} sessions found in this
-            date range.
+            No {ACTIVITY_TABS[activeTab].label.toLowerCase()} sessions found in this date range.
           </p>
-          <p className="hint-text">
-            Try adjusting the date filter or switching tabs.
-          </p>
+          <p className="hint-text">Try adjusting the date filter or switching tabs.</p>
         </div>
       ) : (
         <>
           {totalSessions > 0 && (
             <>
               <div className="dashboard-section">
-                <StatsGrid
-                  summaries={summaries}
-                  restingHR={rhr}
-                  activeTab={activeTab}
-                />
+                <StatsGrid summaries={summaries} restingHR={rhr} activeTab={activeTab} />
               </div>
               <div className="dashboard-section">
                 <ZoneBar zones={overallZones} meta={`${totalSessions} sessions combined`} />
@@ -202,31 +214,22 @@ export function Dashboard() {
             <>
               {filteredWorkouts.length > 0 && (
                 <div className="dashboard-section">
-                  <WorkoutHeatmap workouts={filteredWorkouts} fig={figCounter++} dateFrom={dateFrom} dateTo={dateTo} />
+                  <WorkoutHeatmap
+                    workouts={filteredWorkouts}
+                    fig={figCounter++}
+                    dateFrom={dateFrom}
+                    dateTo={dateTo}
+                  />
                 </div>
               )}
               <div className="charts-grid dashboard-section">
-                {rhr.length > 1 && (
-                  <RhrChart data={rhr} fig={figCounter++} />
-                )}
-                {vo2.length > 1 && (
-                  <Vo2Chart data={vo2} fig={figCounter++} />
-                )}
-                {hrv.length > 1 && (
-                  <HrvChart data={hrv} fig={figCounter++} />
-                )}
-                {walkingHR.length > 1 && (
-                  <WalkingHrChart data={walkingHR} fig={figCounter++} />
-                )}
-                {bodyMass.length > 1 && (
-                  <BodyMassChart data={bodyMass} fig={figCounter++} />
-                )}
-                {stepCounts.length > 1 && (
-                  <StepCountChart data={stepCounts} fig={figCounter++} />
-                )}
-                {sleep.length > 1 && (
-                  <SleepChart data={sleep} fig={figCounter++} />
-                )}
+                {rhr.length > 1 && <RhrChart data={rhr} fig={figCounter++} />}
+                {vo2.length > 1 && <Vo2Chart data={vo2} fig={figCounter++} />}
+                {hrv.length > 1 && <HrvChart data={hrv} fig={figCounter++} />}
+                {walkingHR.length > 1 && <WalkingHrChart data={walkingHR} fig={figCounter++} />}
+                {bodyMass.length > 1 && <BodyMassChart data={bodyMass} fig={figCounter++} />}
+                {stepCounts.length > 1 && <StepCountChart data={stepCounts} fig={figCounter++} />}
+                {sleep.length > 1 && <SleepChart data={sleep} fig={figCounter++} />}
                 {activeEnergy.length > 1 && (
                   <ActiveEnergyChart data={activeEnergy} fig={figCounter++} />
                 )}
@@ -242,6 +245,7 @@ export function Dashboard() {
                 const actSummaries = summaries.filter((s) => matchesTab(s.type, act));
                 if (actSummaries.length === 0) return null;
                 const startFig = figCounter;
+                // eslint-disable-next-line react-hooks/immutability
                 figCounter += countActivityCharts(actSummaries);
                 return (
                   <div className="section dashboard-section" key={act}>
@@ -268,8 +272,7 @@ export function Dashboard() {
                   </div>
                 </div>
               )}
-              {summaries.filter(hasRenderablePace).length >
-                1 && (
+              {summaries.filter(hasRenderablePace).length > 1 && (
                 <div className="section">
                   <div className="section-header">
                     <h2>Pace Trend</h2>
@@ -281,8 +284,8 @@ export function Dashboard() {
                   </div>
                 </div>
               )}
-              {summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0)
-                .length > 2 && (
+              {summaries.filter((s) => s.cardiacEfficiency && s.cardiacEfficiency > 0).length >
+                2 && (
                 <div className="section">
                   <div className="section-header">
                     <h2>Cardiac Efficiency</h2>
@@ -294,8 +297,7 @@ export function Dashboard() {
                   </div>
                 </div>
               )}
-              {summaries.filter(hasRenderablePace).length >
-                2 && (
+              {summaries.filter(hasRenderablePace).length > 2 && (
                 <div className="section">
                   <div className="section-header">
                     <h2>Pace at Heart Rate</h2>

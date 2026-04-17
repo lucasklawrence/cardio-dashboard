@@ -27,10 +27,7 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
   );
 
   const totalCols = grid[0]?.length ?? 0;
-  const monthMap = useMemo(
-    () => new Map(monthLabels.map((m) => [m.col, m.label])),
-    [monthLabels],
-  );
+  const monthMap = useMemo(() => new Map(monthLabels.map((m) => [m.col, m.label])), [monthLabels]);
   if (totalCols === 0) return null;
 
   const totalWorkouts = workouts.length;
@@ -48,7 +45,9 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
         <div className="heatmap">
           <div className="heatmap-labels">
             {DAY_LABELS.map((label, i) => (
-              <span key={i} className="heatmap-day-label">{label}</span>
+              <span key={i} className="heatmap-day-label">
+                {label}
+              </span>
             ))}
           </div>
           <div className="heatmap-grid">
@@ -67,9 +66,10 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
               {Array.from({ length: totalCols }, (_, col) =>
                 grid.map((row, rowIdx) => {
                   const cell = row[col];
-                  const tip = cell.count > 0
-                    ? `${formatFullDate(cell.date)}: ${cell.count} workout${cell.count > 1 ? 's' : ''} (${cell.types.join(', ')})`
-                    : formatFullDate(cell.date);
+                  const tip =
+                    cell.count > 0
+                      ? `${formatFullDate(cell.date)}: ${cell.count} workout${cell.count > 1 ? 's' : ''} (${cell.types.join(', ')})`
+                      : formatFullDate(cell.date);
                   return (
                     <div
                       key={`${col}-${rowIdx}`}

@@ -24,9 +24,7 @@ export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
           {
             label: 'Avg HR',
             data: recent.map((s) => s.avgHR),
-            backgroundColor: recent.map(
-              (s) => ZONE_COLORS[hrZone(s.avgHR, zones)] + '99',
-            ),
+            backgroundColor: recent.map((s) => ZONE_COLORS[hrZone(s.avgHR, zones)] + '99'),
             borderColor: recent.map((s) => ZONE_COLORS[hrZone(s.avgHR, zones)]),
             borderWidth: 1,
             borderRadius: 3,

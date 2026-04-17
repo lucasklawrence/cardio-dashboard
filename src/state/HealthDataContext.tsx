@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { ActivityTab, HealthData, Zones } from '../types';
 import { DEFAULT_ZONES } from '../constants';
 
@@ -78,11 +71,7 @@ export function HealthDataProvider({ children }: { children: ReactNode }) {
     [healthData, activeTab, dateFrom, dateTo, zones, setZone, setDatePreset, setDateYTD],
   );
 
-  return (
-    <HealthDataContext.Provider value={value}>
-      {children}
-    </HealthDataContext.Provider>
-  );
+  return <HealthDataContext.Provider value={value}>{children}</HealthDataContext.Provider>;
 }
 
 /** Access the shared health data context. Throws if used outside HealthDataProvider. */
