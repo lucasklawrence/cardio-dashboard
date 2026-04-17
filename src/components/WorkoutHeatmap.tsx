@@ -53,7 +53,7 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
           <div className="heatmap-grid">
             <div
               className="heatmap-months"
-              style={{ gridTemplateColumns: `repeat(${totalCols}, minmax(8px, 14px))` }}
+              style={{ gridTemplateColumns: `repeat(${totalCols}, 1fr)` }}
             >
               {Array.from({ length: totalCols }, (_, col) => (
                 <span key={col}>{monthMap.get(col) ?? ''}</span>
@@ -61,7 +61,7 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
             </div>
             <div
               className="heatmap-cells"
-              style={{ gridTemplateColumns: `repeat(${totalCols}, minmax(8px, 14px))` }}
+              style={{ gridTemplateColumns: `repeat(${totalCols}, 1fr)` }}
             >
               {Array.from({ length: totalCols }, (_, col) =>
                 grid.map((row, rowIdx) => {
@@ -81,6 +81,14 @@ export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatm
               )}
             </div>
           </div>
+        </div>
+        <div className="heatmap-legend">
+          <span>Less</span>
+          <div className="heatmap-cell" />
+          <div className="heatmap-cell level-1" />
+          <div className="heatmap-cell level-2" />
+          <div className="heatmap-cell level-3" />
+          <span>More</span>
         </div>
       </div>
     </div>

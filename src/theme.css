@@ -926,7 +926,6 @@ header .version {
 .heatmap-cell {
   aspect-ratio: 1;
   min-width: 8px;
-  max-width: 14px;
   border-radius: 2px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -949,4 +948,21 @@ header .version {
 .heatmap-cell.level-3 {
   background: #22c55e;
   border-color: rgba(34, 197, 94, 0.5);
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.heatmap-legend .heatmap-cell {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
 }

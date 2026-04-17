@@ -123,6 +123,8 @@ export function Dashboard() {
     const allSessionHR = summaries.flatMap((s) => s.hrSamples);
     const overallZones = analyzeZoneDistribution(allSessionHR, zones);
     const streak = computeStreaks(tabWorkouts);
+    const hasDateFilter = dateFrom != null || dateTo != null;
+    const filteredStreak = hasDateFilter ? computeStreaks(filteredWorkouts) : null;
 
     return {
       summaries,
@@ -137,6 +139,7 @@ export function Dashboard() {
       activeEnergy,
       overallZones,
       streak,
+      filteredStreak,
     };
   }, [healthData, activeTab, dateFrom, dateTo, zones]);
 
@@ -179,6 +182,7 @@ export function Dashboard() {
     activeEnergy,
     overallZones,
     streak,
+    filteredStreak,
   } = view;
   const totalSessions = summaries.length;
 
@@ -217,7 +221,7 @@ export function Dashboard() {
           )}
           {(streak.current > 0 || streak.longest > 0) && (
             <div className="dashboard-section">
-              <StreakCounter streak={streak} />
+              <StreakCounter streak={streak} filteredStreak={filteredStreak} />
             </div>
           )}
 
