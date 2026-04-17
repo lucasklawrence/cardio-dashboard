@@ -1,3 +1,4 @@
+/** Time period for grouping data points in aggregation. */
 export type AggregationMode = 'day' | 'week' | 'month';
 
 interface TimePoint {
@@ -21,8 +22,10 @@ function getMonthKey(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/** Reducer function applied to grouped values: average or sum. */
 export type AggregationReducer = 'avg' | 'sum';
 
+/** Group time-series data by day/week/month and reduce each group via avg or sum. */
 export function aggregateTimeSeries(
   data: TimePoint[],
   mode: AggregationMode,

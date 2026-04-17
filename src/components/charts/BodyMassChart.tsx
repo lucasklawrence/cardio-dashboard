@@ -16,6 +16,7 @@ interface BodyMassChartProps {
 
 const MAX_POINTS = 90;
 
+/** Body weight line chart (lbs) with aggregation toggle and optional goal line. */
 export function BodyMassChart({ data, fig }: BodyMassChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('bodyMass');

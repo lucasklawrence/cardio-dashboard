@@ -16,6 +16,7 @@ interface HrvChartProps {
 
 const MAX_POINTS = 90;
 
+/** Heart rate variability (SDNN) line chart in milliseconds with aggregation toggle and optional goal line. */
 export function HrvChart({ data, fig }: HrvChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('hrv');

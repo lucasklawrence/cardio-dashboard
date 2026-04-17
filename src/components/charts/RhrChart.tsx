@@ -16,6 +16,7 @@ interface RhrChartProps {
 
 const MAX_POINTS = 90;
 
+/** Resting heart rate line chart with aggregation toggle and optional goal line. */
 export function RhrChart({ data, fig }: RhrChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('rhr');

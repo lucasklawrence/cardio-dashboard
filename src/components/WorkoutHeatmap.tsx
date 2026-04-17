@@ -19,6 +19,7 @@ function cellLevel(count: number): string {
   return ' level-3';
 }
 
+/** GitHub-style calendar heatmap showing workout frequency with color-coded intensity per day. */
 export function WorkoutHeatmap({ workouts, fig, dateFrom, dateTo }: WorkoutHeatmapProps) {
   const { grid, monthLabels } = useMemo(
     () => buildHeatmapGrid(workouts, dateFrom, dateTo),

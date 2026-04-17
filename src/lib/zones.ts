@@ -1,5 +1,6 @@
 import type { HrSample, ZoneDistribution, ZoneNumber, Zones } from '../types';
 
+/** Classify a heart rate BPM into a zone number (1–5) based on zone boundaries. */
 export function hrZone(bpm: number, zones: Zones): ZoneNumber {
   if (bpm < zones.z1Max) return 1;
   if (bpm < zones.z2Max) return 2;
@@ -8,6 +9,7 @@ export function hrZone(bpm: number, zones: Zones): ZoneNumber {
   return 5;
 }
 
+/** Compute the count and percentage breakdown of HR samples across all 5 zones. */
 export function analyzeZoneDistribution(
   samples: HrSample[],
   zones: Zones,

@@ -15,6 +15,7 @@ interface ActiveEnergyChartProps {
 
 const MAX_POINTS = 90;
 
+/** Daily active energy expenditure bar chart (kcal) with sum aggregation, toggle, and optional goal line. */
 export function ActiveEnergyChart({ data, fig }: ActiveEnergyChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('activeEnergy');

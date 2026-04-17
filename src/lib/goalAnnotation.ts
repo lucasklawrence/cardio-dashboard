@@ -1,3 +1,4 @@
+/** Build a chartjs-plugin-annotation config for a horizontal dashed goal line. Returns {} when no goal is set. */
 export function goalAnnotation(goalValue: number | null) {
   if (goalValue == null) return {};
   return {

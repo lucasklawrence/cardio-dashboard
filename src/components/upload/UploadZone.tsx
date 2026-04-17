@@ -4,6 +4,7 @@ interface UploadZoneProps {
   onFile: (file: File) => void;
 }
 
+/** Drag-and-drop / click-to-browse file upload area for Apple Health exports (ZIP, XML, or JSON). */
 export function UploadZone({ onFile }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);

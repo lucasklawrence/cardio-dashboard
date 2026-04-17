@@ -18,6 +18,7 @@ interface PaceTrendChartProps {
 
 const MAX_POINTS = 90;
 
+/** Aggregated running pace trend line chart with reversed y-axis, gap breaks, and optional goal line. */
 export function PaceTrendChart({ summaries, fig }: PaceTrendChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('paceTrend');

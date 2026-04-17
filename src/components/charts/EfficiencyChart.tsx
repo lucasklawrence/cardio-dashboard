@@ -8,6 +8,7 @@ interface EfficiencyChartProps {
   summaries: WorkoutSummary[];
 }
 
+/** Cardiac efficiency line chart (meters per heartbeat) — higher values indicate better fitness. */
 export function EfficiencyChart({ summaries }: EfficiencyChartProps) {
   const config = useMemo<ChartConfiguration<'line'> | null>(() => {
     const withEff = summaries

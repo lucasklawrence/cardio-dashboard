@@ -9,6 +9,7 @@ interface StatsGridProps {
   activeTab: ActivityTab;
 }
 
+/** Summary stat cards showing session count, avg duration, avg HR, total distance, avg pace, and resting HR. */
 export function StatsGrid({ summaries, restingHR, activeTab }: StatsGridProps) {
   const totalSessions = summaries.length;
   const avgDuration =

@@ -16,6 +16,7 @@ interface Vo2ChartProps {
 
 const MAX_POINTS = 60;
 
+/** VO2max estimate line chart (mL/kg/min) with aggregation toggle and optional goal line. */
 export function Vo2Chart({ data, fig }: Vo2ChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('vo2max');

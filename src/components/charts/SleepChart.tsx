@@ -15,6 +15,7 @@ interface SleepChartProps {
 
 const MAX_POINTS = 90;
 
+/** Nightly sleep duration bar chart (hours) with avg aggregation, toggle, and optional goal line. */
 export function SleepChart({ data, fig }: SleepChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('day');
   const [goal, setGoal] = useGoal('sleep');

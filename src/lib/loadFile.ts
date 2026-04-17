@@ -3,6 +3,7 @@ import type { HealthData, ProgressCallback } from '../types';
 import { parseHealthXml } from './parseHealthXml';
 import { hydrateHealthJson } from './parseHealthJson';
 
+/** Load a health data file (ZIP, XML, or JSON), decompress if needed, and parse into HealthData. */
 export async function loadFile(
   file: File,
   onProgress: ProgressCallback,

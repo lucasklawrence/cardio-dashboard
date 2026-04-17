@@ -8,6 +8,7 @@ interface ZoneBarProps {
 
 const ZONE_ORDER: ZoneNumber[] = [1, 2, 3, 4, 5];
 
+/** Horizontal stacked bar showing HR zone distribution percentages with a color legend. */
 export function ZoneBar({ zones, meta }: ZoneBarProps) {
   return (
     <div className="section">

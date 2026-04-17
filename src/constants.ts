@@ -1,5 +1,6 @@
 import type { ActivityTab, ZoneNumber, Zones } from './types';
 
+/** Display labels and icons for each activity tab. */
 export const ACTIVITY_TABS: Record<ActivityTab, { label: string; icon: string }> = {
   all: { label: 'All Cardio', icon: '♥' },
   stairs: { label: 'Stair Climber', icon: '⬆' },
@@ -7,8 +8,10 @@ export const ACTIVITY_TABS: Record<ActivityTab, { label: string; icon: string }>
   walk: { label: 'Walking', icon: '~' },
 };
 
+/** Ordered list of tabs for rendering in the UI. */
 export const ACTIVITY_TAB_ORDER: ActivityTab[] = ['all', 'stairs', 'run', 'walk'];
 
+/** Color hex codes for each HR zone used in charts and badges. */
 export const ZONE_COLORS: Record<ZoneNumber, string> = {
   1: '#3b82f6',
   2: '#22c55e',
@@ -17,6 +20,7 @@ export const ZONE_COLORS: Record<ZoneNumber, string> = {
   5: '#ef4444',
 };
 
+/** Human-readable names for each HR zone. */
 export const ZONE_NAMES: Record<ZoneNumber, string> = {
   1: 'Zone 1 — Recovery',
   2: 'Zone 2 — Aerobic Base',
@@ -25,6 +29,7 @@ export const ZONE_NAMES: Record<ZoneNumber, string> = {
   5: 'Zone 5 — VO₂max',
 };
 
+/** Default HR zone boundaries based on ~60/70/80/90% of 190 max HR. */
 export const DEFAULT_ZONES: Zones = {
   maxHR: 190,
   z1Max: 114,
@@ -33,6 +38,7 @@ export const DEFAULT_ZONES: Zones = {
   z4Max: 171,
 };
 
+/** Ordered stages displayed during file parsing progress. */
 export const PARSE_STAGES = [
   { id: 'zip', label: 'Decompressing ZIP' },
   { id: 'hr', label: 'Heart rate samples' },

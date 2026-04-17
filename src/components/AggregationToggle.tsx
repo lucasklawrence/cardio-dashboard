@@ -11,6 +11,7 @@ const MODES: { label: string; value: AggregationMode }[] = [
   { label: 'Month', value: 'month' },
 ];
 
+/** Three-button toggle for selecting day/week/month time aggregation. */
 export function AggregationToggle({ mode, onChange }: AggregationToggleProps) {
   return (
     <div className="agg-toggle">

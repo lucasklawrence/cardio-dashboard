@@ -8,6 +8,7 @@ interface DataSummaryProps {
   walkCount: number;
 }
 
+/** Footer section displaying raw data counts (HR samples, workouts, readings) for the loaded export. */
 export function DataSummary({
   healthData,
   totalSessions,

@@ -20,6 +20,7 @@ function isValidZones(z: Zones): boolean {
   );
 }
 
+/** Editable number inputs for customizing HR zone boundaries (max HR and zone ceilings). */
 export function ZoneSettings() {
   const { zones, setZone } = useHealthDataContext();
 

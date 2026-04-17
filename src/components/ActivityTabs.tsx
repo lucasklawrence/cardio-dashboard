@@ -3,6 +3,7 @@ import { ACTIVITY_TABS, ACTIVITY_TAB_ORDER } from '../constants';
 import { useHealthDataContext } from '../state/HealthDataContext';
 import { applyDateFilter, getWorkoutsForTab } from '../lib/workouts';
 
+/** Tab bar for switching between activity types, showing session counts per tab. */
 export function ActivityTabs() {
   const { healthData, activeTab, setActiveTab, dateFrom, dateTo } =
     useHealthDataContext();

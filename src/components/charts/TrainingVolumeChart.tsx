@@ -20,6 +20,7 @@ function durationMinutes(w: Workout): number {
   return (w.endDate.getTime() - w.startDate.getTime()) / 60000;
 }
 
+/** Training volume bar chart showing total workout duration (hours) per period with sum aggregation and optional goal line. */
 export function TrainingVolumeChart({ workouts, fig }: TrainingVolumeChartProps) {
   const [aggMode, setAggMode] = useState<AggregationMode>('week');
   const [goal, setGoal] = useGoal('trainingVolume');

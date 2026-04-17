@@ -10,6 +10,7 @@ interface SessionHrChartProps {
   zones: Zones;
 }
 
+/** Bar chart of average HR per session (last 30), color-coded by HR zone. */
 export function SessionHrChart({ summaries, zones }: SessionHrChartProps) {
   const config = useMemo<ChartConfiguration<'bar'> | null>(() => {
     if (summaries.length < 2) return null;

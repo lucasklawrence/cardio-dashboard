@@ -14,6 +14,7 @@ function zoneBadgeClass(dominantZone: number): string {
   return 'badge-mixed';
 }
 
+/** Tabular log of the 50 most recent workout sessions with date, type, duration, pace, HR, and zone data. */
 export function SessionLog({ summaries, activeTab }: SessionLogProps) {
   const showTypeCol = activeTab === 'all';
   const anyDist = summaries.some((s) => s.distMi && s.distMi > 0);

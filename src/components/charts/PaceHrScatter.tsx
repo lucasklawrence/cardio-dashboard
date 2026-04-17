@@ -8,6 +8,7 @@ interface PaceHrScatterProps {
   summaries: WorkoutSummary[];
 }
 
+/** Scatter plot of pace vs avg HR per session — moving down+left indicates improving fitness. */
 export function PaceHrScatter({ summaries }: PaceHrScatterProps) {
   const config = useMemo<ChartConfiguration<'scatter'> | null>(() => {
     const data = summaries.filter(
