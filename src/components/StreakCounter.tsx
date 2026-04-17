@@ -11,7 +11,7 @@ export function StreakCounter({ streak }: StreakCounterProps) {
   return (
     <div className="streak-counter">
       <div className={`streak-current ${isActive ? 'active' : 'inactive'}`}>
-        <span className="streak-flame">{isActive ? '\u{1F525}' : '\u{1F525}'}</span>
+        <span className="streak-flame">{'\u{1F525}'}</span>
         <span className="streak-value">{streak.current}</span>
         <span className="streak-label">day streak</span>
       </div>
